@@ -34,7 +34,6 @@ def post_thread(request):
 
     # if malformed protocol
     except AssertionError as err:
-        print(err)
         response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
