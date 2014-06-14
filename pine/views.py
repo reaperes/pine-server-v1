@@ -1,10 +1,15 @@
 import json
+import logging
 
 from django.http import HttpResponse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
 from pine.models import Thread
 from pine.pine import Protocol
+
+
+logger = logging.getLogger(__name__)
 
 
 class ErrorMessage:
@@ -13,6 +18,7 @@ class ErrorMessage:
     MALFORMED_CONTENT = 'Content parameter is malformed'
 
 
+@csrf_exempt
 def post_thread(request):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
