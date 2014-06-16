@@ -1,11 +1,8 @@
 from django.db import models
-import datetime
-from django.utils import timezone
 
 
-# Create your models here.
 class Thread(models.Model):
-    author = models.CharField(max_length=15)    # need to remodeling, should use foreign key
+    author = models.CharField(max_length=15)
     content = models.CharField(max_length=200)
     pub_date = models.DateTimeField()
 
@@ -20,3 +17,7 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.content
+
+
+class PineFeed(models.Model):
+    thread = models.ForeignKey(Thread)
