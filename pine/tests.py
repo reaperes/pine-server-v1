@@ -1,101 +1,56 @@
+import json
+from urllib import parse
+
 from django.test import TestCase
 from django.test.client import Client
-import json
 
 from pine.pine import Protocol
-from pine.views import ErrorMessage
-
 
 URL = '/threads'
 
 
-class PostThreadTestCase(TestCase):
+class CoreThreadTestCase(TestCase):
+    fixtures = ['users.json', 'threads.json']
+
     def setUp(self):
-        self.post_thread_json = {
-            'author': '123456789012345',
+        self.post_friend_thread_json = {
+            'author': '2',
+            'is_public': False,
             'content': 'Hello, Test content'
         }
-        self.get_threads_json = {
-            'offset': 0,
-            'limit': 1
-        }
-
-    def test_valid_post(self):
-        response = send_data(self.post_thread_json)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-
-    def test_valid_post_max_character_content(self):
-        self.post_thread_json['content'] = '1234567890' * 20    # 200 length content
-        response = send_data(self.post_thread_json)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-
-    def test_invalid_post_no_author(self):
-        self.post_thread_json.__delitem__('author')
-        response = send_data(self.post_thread_json)
-        assert response[Protocol.RESULT] == Protocol.FAIL
-        assert response[Protocol.MESSAGE] == ErrorMessage.POST_MALFORMED_AUTHOR
-
-    def test_invalid_post_too_long_author(self):
-        self.post_thread_json['author'] = '1234567890123456'
-        response = send_data(self.post_thread_json)
-        assert response[Protocol.RESULT] == Protocol.FAIL
-        assert response[Protocol.MESSAGE] == ErrorMessage.POST_MALFORMED_AUTHOR
-
-    def test_invalid_post_no_content(self):
-        self.post_thread_json.__delitem__('content')
-        response = send_data(self.post_thread_json)
-        assert response[Protocol.RESULT] == Protocol.FAIL
-        assert response[Protocol.MESSAGE] == ErrorMessage.POST_MALFORMED_CONTENT
-
-    def test_invalid_post_too_long_content(self):
-        self.post_thread_json['content'] = '1234567890' * 20 + '1'  # 201 length content
-        response = send_data(self.post_thread_json)
-        assert response[Protocol.RESULT] == Protocol.FAIL
-        assert response[Protocol.MESSAGE] == ErrorMessage.POST_MALFORMED_CONTENT
-
-
-class GetThreadsTestCase(TestCase):
-    def setUp(self):
-        self.post_thread_json = {
-            'author': '123456789012345',
+        self.post_public_thread_json = {
+            'author': '2',
+            'is_public': True,
             'content': 'Hello, Test content'
         }
-        self.get_threads_json = {
+        self.get_friend_threads_json = {
+            'user': 2,
+            'is_public': False,
             'offset': 0,
-            'limit': 1
+            'limit': 10
+        }
+        self.get_public_threads_json = {
+            'user': 2,
+            'is_public': True,
+            'offset': 0,
+            'limit': 10
         }
 
-    def test_valid_get_threads(self):
-        response = send_data(self.post_thread_json)
+    def test_post_friends_thread(self):
+        response = send_data(self.post_friend_thread_json)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
-        self.post_thread_json['content'] = '1234567890' * 20
-        response = send_data(self.post_thread_json)
+    def test_post_public_thread(self):
+        response = send_data(self.post_public_thread_json)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
-        response = send_data(self.get_threads_json, method='GET', url=URL+r'?offset=0&limit=10')
+    def test_get_friends_threads(self):
+        response = send_data(self.get_friend_threads_json, method='GET')
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert len(response[Protocol.DATA]) == 2
 
-    def test_invalid_get_threads_offset_10000(self):
-        response = send_data(self.get_threads_json, method='GET', url=URL+r'?offset=10000&limit=10')
-        assert response[Protocol.RESULT] == Protocol.FAIL
-        assert response[Protocol.MESSAGE] == ErrorMessage.GET_MALFORMED_OFFSET
-
-    def test_invalid_get_threads_offset_no_number(self):
-        response = send_data(self.get_threads_json, method='GET', url=URL+r'?offset=a&limit=10')
-        assert response[Protocol.RESULT] == Protocol.FAIL
-        assert response[Protocol.MESSAGE] == ErrorMessage.GET_MALFORMED_OFFSET
-
-    def test_invalid_get_threads_limit_101(self):
-        response = send_data(self.get_threads_json, method='GET', url=URL+r'?offset=200&limit=101')
-        assert response[Protocol.RESULT] == Protocol.FAIL
-        assert response[Protocol.MESSAGE] == ErrorMessage.GET_MALFORMED_LIMIT
-
-    def test_invalid_get_threads_limit_no_number(self):
-        response = send_data(self.get_threads_json, method='GET', url=URL+r'?offset=100&limit=c')
-        assert response[Protocol.RESULT] == Protocol.FAIL
-        assert response[Protocol.MESSAGE] == ErrorMessage.GET_MALFORMED_LIMIT
+    def test_get_public_threads(self):
+        response = send_data(self.get_public_threads_json, method='GET')
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
 
 
 def send_data(send_object, method='POST', url=URL):
@@ -106,5 +61,6 @@ def send_data(send_object, method='POST', url=URL):
 
     elif method is 'GET':
         c = Client()
-        response = c.get(url, content_type='application/json').content.decode('utf-8')
+        uri = parse.urlencode(send_object)
+        response = c.get(url+'?'+uri, content_type='application/json').content.decode('utf-8')
         return json.loads(response)

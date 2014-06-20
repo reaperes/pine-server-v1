@@ -7,3 +7,5 @@ class Protocol:
 
     SUCCESS = 'pine'
     FAIL = 'not pine'
+
+    PUB_DATE = 'pub_date'

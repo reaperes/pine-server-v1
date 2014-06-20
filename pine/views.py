@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from pine.models import Thread, PineFeed
+from pine.models import Threads, Users
 from pine.pine import Protocol
 
 
@@ -14,10 +14,7 @@ logger = logging.getLogger(__name__)
 
 class ErrorMessage:
     MALFORMED_JSON_REQUEST = 'Malformed json request'
-    POST_MALFORMED_AUTHOR = 'Author parameter is malformed'
-    POST_MALFORMED_CONTENT = 'Content parameter is malformed'
-    GET_MALFORMED_OFFSET = 'Offset parameter is malformed'
-    GET_MALFORMED_LIMIT = 'Limit parameter is malformed'
+    MALFORMED_PARAMETER = 'Some parameters are malformed'
 
 
 @csrf_exempt
@@ -31,13 +28,14 @@ def pine_thread(request):
 """ post thread json protocol
 
 request json = {
-    author:     phone number    (limit: <=15),
-    content:    content         (limit: <=200)
+    author:     (Number, Users.pk),
+    is_public:  (Boolean)
+    content:    (String, content < 200)
 }
 
 response json = {
-    result:     request result                  (SUCCESS or FAIL),
-    message:    when result message is fail     (One of ErrorMessages)
+    result:     (Boolean, 'pine' or 'not pine'),
+    message:    (String, One of ErrorMessages)
 }
 
 """
@@ -52,10 +50,14 @@ def post_thread(request):
     try:
         req_json_str = json.loads(request.body.decode('utf-8'))
         check_post_thread_request_validation(req_json_str)
-        thread = Thread.objects.create(author=req_json_str['author'], content=req_json_str['content'], pub_date=timezone.now())
 
-        # add pine feed
-        PineFeed.objects.create(thread=thread)
+        user = Users.objects.get(pk=int(req_json_str['author']))
+
+        thread = Threads.objects.create(author=user,
+                                        is_public=bool(req_json_str['is_public']),
+                                        pub_date=timezone.now(),
+                                        content=req_json_str['content'])
+        thread.readers.add(*[f for f in user.friends.only('pk')])
 
         response_data = {
             Protocol.RESULT: Protocol.SUCCESS,
@@ -75,31 +77,41 @@ def post_thread(request):
 
 
 def check_post_thread_request_validation(request_json_str):
-    assert 'author' in request_json_str, ErrorMessage.POST_MALFORMED_AUTHOR
-    author = request_json_str['author']
-    assert author and 0 < len(author) <= 15, ErrorMessage.POST_MALFORMED_AUTHOR
+    try:
+        assert 'author' in request_json_str, 'author error'
+        author = request_json_str['author']
+        assert author, 'author error'
 
-    assert 'content' in request_json_str, ErrorMessage.POST_MALFORMED_CONTENT
-    content = request_json_str['content']
-    assert content and 0 < len(content) <= 200, ErrorMessage.POST_MALFORMED_CONTENT
+        assert 'is_public' in request_json_str, 'is_public error'
+        is_public = bool(request_json_str['is_public'])
+        assert is_public is True or is_public is False, 'is_public error'
+
+        assert 'content' in request_json_str, 'content error'
+        content = request_json_str['content']
+        assert content and 0 < len(content) <= 200, 'content error'
+    except AssertionError as err:
+        raise AssertionError(err)
 
 
 """ get thread json protocol
 
 request json = {
-    offset:     (Number) offset, 0 is latest offset    (0 < offset),
-    limit:      (Number) limit                         (0 < limit)
+    user:       (Number) Users.pk
+    is_public:  (Boolean)
+    offset:     (Number) offset, 0 is latest offset    (0 < offset < 10000)
+    limit:      (Number) limit                         (0 < limit <= 100)
 }
 
 response json = {
-    result:     (String) request result                  (SUCCESS or FAIL),
-    message:    (String) when result message is fail     (One of ErrorMessages),
-    data:       (Array)  thread data array
+    result:     (String, SUCCESS or FAIL)
+    message:    (String, One of ErrorMessages)
+    data:       (Array, thread data array)
     [
         {
-            id,
-            pub_date,
-            content
+            id:         (Number, pk)
+            is_public:  (Boolean)
+            content:    (String, content <= 200)
+            pub_date:   (String, '%Y-%m-%d %H:%M:%S')
         },
         {
             ...
@@ -120,16 +132,22 @@ def get_threads(request):
     try:
         check_get_thread_request_validation(request)
 
+        user = int(request.GET.get('user'))
+        is_public = request.GET.get('is_public')
         offset = int(request.GET.get('offset'))
         limit = int(request.GET.get('limit'))
 
-        queryset = PineFeed.objects.all()[offset:limit]
-        for query in queryset:
-            thread = query.thread
+        if is_public == 'True':
+            threads = Threads.objects.filter(is_public=True).exclude(readers__id=user)[offset:limit]
+        else:
+            threads = Threads.objects.filter(readers__id=user)[offset:limit]
+
+        for thread in threads:
             response_data[Protocol.DATA].append({
                 'id': thread.id,
-                'pub_date': thread.pub_date.strftime(r'%Y-%m-%d %H:%M'),
-                'content': thread.content
+                'is_public': thread.is_public,
+                'content': thread.content,
+                'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S')
             })
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
@@ -146,18 +164,21 @@ def get_threads(request):
 
 
 def check_get_thread_request_validation(request):
-    assert request.GET.get('offset'), ErrorMessage.GET_MALFORMED_OFFSET
-    offset = request.GET.get('offset')
     try:
-        offset = int(offset)
-    except ValueError:
-        assert False, ErrorMessage.GET_MALFORMED_OFFSET
-    assert isinstance(offset, int) and 0 <= offset < 10000, ErrorMessage.GET_MALFORMED_OFFSET
+        assert request.GET.get('user')
+        user = int(request.GET.get('user'))
+        assert user is True or user is not True
 
-    assert request.GET.get('limit'), ErrorMessage.GET_MALFORMED_LIMIT
-    limit = request.GET.get('limit')
-    try:
-        limit = int(limit)
-    except ValueError:
-        assert False, ErrorMessage.GET_MALFORMED_LIMIT
-    assert isinstance(limit, int) and 0 < limit <= 100, ErrorMessage.GET_MALFORMED_LIMIT
+        assert request.GET.get('is_public')
+        is_public = bool(request.GET.get('is_public'))
+        assert is_public is True or is_public is False, 'hello'
+
+        assert request.GET.get('offset')
+        offset = int(request.GET.get('offset'))
+        assert isinstance(offset, int) and 0 <= offset < 10000
+
+        assert request.GET.get('limit')
+        limit = int(request.GET.get('limit'))
+        assert isinstance(limit, int) and 0 < limit <= 100
+    except (ValueError, AssertionError) as err:
+        raise AssertionError(err)
