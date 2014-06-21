@@ -57,6 +57,7 @@ def post_thread(request):
                                         is_public=bool(req_json_str['is_public']),
                                         pub_date=timezone.now(),
                                         content=req_json_str['content'])
+        thread.readers.add(user.id)
         thread.readers.add(*[f for f in user.friends.only('pk')])
 
         response_data = {
@@ -137,7 +138,7 @@ def get_threads(request):
         offset = int(request.GET.get('offset'))
         limit = int(request.GET.get('limit'))
 
-        if is_public == 'True':
+        if is_public == 'true' or is_public == 'True':
             threads = Threads.objects.filter(is_public=True).exclude(readers__id=user)[offset:limit]
         else:
             threads = Threads.objects.filter(readers__id=user)[offset:limit]

@@ -14,12 +14,12 @@ class CoreThreadTestCase(TestCase):
 
     def setUp(self):
         self.post_friend_thread_json = {
-            'author': '2',
+            'author': 2,
             'is_public': False,
             'content': 'Hello, Test content'
         }
         self.post_public_thread_json = {
-            'author': '2',
+            'author': 2,
             'is_public': True,
             'content': 'Hello, Test content'
         }

@@ -5,7 +5,7 @@
     "fields": {
       "author": 1,
       "is_public": false,
-      "readers": [2, 3, 4, 5, 6, 7, 8],
+      "readers": [1, 2, 3, 4, 5, 6, 7, 8],
       "pub_date": "2014-06-01T00:00:00+00:00",
       "content": "I'm Namhoon. This threads can be viewed only my friends Sujin, Hanyong, etc."
     }
@@ -16,7 +16,7 @@
     "fields": {
       "author": 1,
       "is_public": true,
-      "readers": [2, 3, 4, 5, 6, 7, 8],
+      "readers": [1, 2, 3, 4, 5, 6, 7, 8],
       "pub_date": "2014-06-01T00:00:01+00:00",
       "content": "I'm Namhoon. This threads can be viewed anyone."
     }
@@ -27,7 +27,7 @@
     "fields": {
       "author": 6,
       "is_public": false,
-      "readers": [1, 5],
+      "readers": [1, 5, 6],
       "pub_date": "2014-06-01T00:04:00+00:00",
       "content": "I'm pf. Choi. It's friends thread."
     }
@@ -38,7 +38,7 @@
     "fields": {
       "author": 6,
       "is_public": true,
-      "readers": [1, 5],
+      "readers": [1, 5, 6],
       "pub_date": "2014-06-01T01:24:50+00:00",
       "content": "I'm pf. Choi. It's public thread."
     }
@@ -49,7 +49,7 @@
     "fields": {
       "author": 5,
       "is_public": false,
-      "readers": [1, 6],
+      "readers": [1, 5, 6],
       "pub_date": "2014-06-19T17:42:50+00:00",
       "content": "I'm pf. Joo. Friends thread."
     }
@@ -60,9 +60,9 @@
     "fields": {
       "author": 5,
       "is_public": true,
-      "readers": [1, 6],
+      "readers": [1, 5, 6],
       "pub_date": "2014-06-19T17:43:58+00:00",
-      "content": "Joo. Friends thread."
+      "content": "Joo. public thread."
     }
   },
   {
@@ -71,7 +71,7 @@
     "fields": {
       "author": 1,
       "is_public": true,
-      "readers": [2, 3, 4, 5, 6, 7, 8],
+      "readers": [1, 2, 3, 4, 5, 6, 7, 8],
       "pub_date": "2014-06-19T17:44:42+00:00",
       "content": "Namhoon. public. 한글 나랏말씀이 귕국에 달하시데"
     }
@@ -82,7 +82,7 @@
     "fields": {
       "author": 1,
       "is_public": false,
-      "readers": [2, 3, 4, 5, 6, 7, 8],
+      "readers": [1, 2, 3, 4, 5, 6, 7, 8],
       "pub_date": "2014-06-19T17:45:38+00:00",
       "content": "Namhoon. friends. ^^ Smile every day. ^.^ ^-^ !@#$%^&*()`_+|"
     }
