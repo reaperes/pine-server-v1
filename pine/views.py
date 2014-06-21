@@ -146,9 +146,9 @@ def get_threads(request):
         for thread in threads:
             response_data[Protocol.DATA].append({
                 'id': thread.id,
-                # 'is_public': thread.is_public,
-                # 'content': thread.content,
-                # 'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S')
+                'is_public': thread.is_public,
+                'content': thread.content,
+                'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S')
             })
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
@@ -171,7 +171,7 @@ def check_get_thread_request_validation(request):
 
         assert request.GET.get('is_friend')
         is_friend = bool(request.GET.get('is_friend'))
-        assert is_friend is True or is_friend is False, 'hello'
+        assert is_friend is True or is_friend is False, 'is_friend'
 
         assert request.GET.get('offset')
         offset = int(request.GET.get('offset'))

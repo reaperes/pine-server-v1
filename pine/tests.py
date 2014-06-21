@@ -47,7 +47,6 @@ class CoreThreadTestCase(TestCase):
     def test_get_friends_threads(self):
         response = send_data(self.get_friend_threads_json, method='GET')
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        print(response)
 
     def test_get_public_threads(self):
         response = send_data(self.get_public_threads_json, method='GET')
