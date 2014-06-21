@@ -25,13 +25,13 @@ class CoreThreadTestCase(TestCase):
         }
         self.get_friend_threads_json = {
             'user': 2,
-            'is_public': False,
+            'is_friend': True,
             'offset': 0,
             'limit': 10
         }
         self.get_public_threads_json = {
             'user': 2,
-            'is_public': True,
+            'is_friend': False,
             'offset': 0,
             'limit': 10
         }
@@ -47,6 +47,7 @@ class CoreThreadTestCase(TestCase):
     def test_get_friends_threads(self):
         response = send_data(self.get_friend_threads_json, method='GET')
         assert response[Protocol.RESULT] == Protocol.SUCCESS
+        print(response)
 
     def test_get_public_threads(self):
         response = send_data(self.get_public_threads_json, method='GET')

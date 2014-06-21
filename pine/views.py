@@ -98,7 +98,7 @@ def check_post_thread_request_validation(request_json_str):
 
 request json = {
     user:       (Number) Users.pk
-    is_public:  (Boolean)
+    is_friend:  (Boolean)
     offset:     (Number) offset, 0 is latest offset    (0 < offset < 10000)
     limit:      (Number) limit                         (0 < limit <= 100)
 }
@@ -134,21 +134,21 @@ def get_threads(request):
         check_get_thread_request_validation(request)
 
         user = int(request.GET.get('user'))
-        is_public = request.GET.get('is_public')
+        is_friend = request.GET.get('is_friend')
         offset = int(request.GET.get('offset'))
         limit = int(request.GET.get('limit'))
 
-        if is_public == 'true' or is_public == 'True':
-            threads = Threads.objects.filter(is_public=True).exclude(readers__id=user)[offset:limit]
-        else:
+        if is_friend == 'true' or is_friend == 'True':
             threads = Threads.objects.filter(readers__id=user)[offset:limit]
+        else:
+            threads = Threads.objects.filter(is_public=True).exclude(readers__id=user)[offset:limit]
 
         for thread in threads:
             response_data[Protocol.DATA].append({
                 'id': thread.id,
-                'is_public': thread.is_public,
-                'content': thread.content,
-                'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S')
+                # 'is_public': thread.is_public,
+                # 'content': thread.content,
+                # 'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S')
             })
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
@@ -167,12 +167,11 @@ def get_threads(request):
 def check_get_thread_request_validation(request):
     try:
         assert request.GET.get('user')
-        user = int(request.GET.get('user'))
-        assert user is True or user is not True
+        int(request.GET.get('user'))
 
-        assert request.GET.get('is_public')
-        is_public = bool(request.GET.get('is_public'))
-        assert is_public is True or is_public is False, 'hello'
+        assert request.GET.get('is_friend')
+        is_friend = bool(request.GET.get('is_friend'))
+        assert is_friend is True or is_friend is False, 'hello'
 
         assert request.GET.get('offset')
         offset = int(request.GET.get('offset'))
