@@ -16,5 +16,4 @@ def pine_test(request):
         response = {}
         for key in request.GET:
             response[key] = request.GET.get(key)
-        print(response)
         return HttpResponse(str(response), content_type='application/json')
