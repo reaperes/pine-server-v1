@@ -66,8 +66,7 @@ def post_thread(request):
         }
 
     # if malformed json
-    except ValueError as err:
-        print(err)
+    except ValueError:
         response_data[Protocol.MESSAGE] = ErrorMessage.MALFORMED_JSON_REQUEST
 
     # if malformed protocol
