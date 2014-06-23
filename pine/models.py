@@ -3,7 +3,7 @@ from django.core import validators
 
 
 class Users(models.Model):
-    phone = models.CharField(max_length=15)    # TODO update code (check regex validator)
+    phone = models.CharField(max_length=15)
     friends = models.ManyToManyField('self', symmetrical=True)
     followings = models.ManyToManyField('self', symmetrical=False, related_name='followers')
 
@@ -26,7 +26,8 @@ class Threads(models.Model):
     is_public = models.BooleanField()
     readers = models.ManyToManyField(Users, related_name='readable')
     pub_date = models.DateTimeField()
-    content = models.CharField(max_length=200)    # TODO update code (check regex)
+    image_url = models.CharField(max_length=256)
+    content = models.CharField(max_length=200)
 
     class Meta:
         ordering = ['-pub_date']
@@ -44,4 +45,5 @@ class Threads(models.Model):
                 + ', is_public:' + str(self.is_public)
                 + ', readers: [' + readers
                 + '], pub_date: ' + str(self.pub_date)
+                + ', image_url: ' + self.image_url
                 + ', content: ' + self.content)

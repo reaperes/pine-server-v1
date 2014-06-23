@@ -7,6 +7,7 @@
       "is_public": false,
       "readers": [1, 2, 3, 4, 5, 6, 7, 8],
       "pub_date": "2014-06-01T00:00:00+00:00",
+      "image_url": "test_image.png",
       "content": "I'm Namhoon. This threads can be viewed only my friends Sujin, Hanyong, etc."
     }
   },
@@ -18,6 +19,7 @@
       "is_public": true,
       "readers": [1, 2, 3, 4, 5, 6, 7, 8],
       "pub_date": "2014-06-01T00:00:01+00:00",
+      "image_url": "test_image.png",
       "content": "I'm Namhoon. This threads can be viewed anyone."
     }
   },
@@ -29,6 +31,7 @@
       "is_public": false,
       "readers": [1, 5, 6],
       "pub_date": "2014-06-01T00:04:00+00:00",
+      "image_url": "test_image.png",
       "content": "I'm pf. Choi. It's friends thread."
     }
   },
@@ -40,6 +43,7 @@
       "is_public": true,
       "readers": [1, 5, 6],
       "pub_date": "2014-06-01T01:24:50+00:00",
+      "image_url": "test_image.png",
       "content": "I'm pf. Choi. It's public thread."
     }
   },
@@ -51,6 +55,7 @@
       "is_public": false,
       "readers": [1, 5, 6],
       "pub_date": "2014-06-19T17:42:50+00:00",
+      "image_url": "test_image.png",
       "content": "I'm pf. Joo. Friends thread."
     }
   },
@@ -62,6 +67,7 @@
       "is_public": true,
       "readers": [1, 5, 6],
       "pub_date": "2014-06-19T17:43:58+00:00",
+      "image_url": "test_image.png",
       "content": "Joo. public thread."
     }
   },
@@ -73,6 +79,7 @@
       "is_public": true,
       "readers": [1, 2, 3, 4, 5, 6, 7, 8],
       "pub_date": "2014-06-19T17:44:42+00:00",
+      "image_url": "test_image.png",
       "content": "Namhoon. public. 한글 나랏말씀이 귕국에 달하시데"
     }
   },
@@ -84,6 +91,7 @@
       "is_public": false,
       "readers": [1, 2, 3, 4, 5, 6, 7, 8],
       "pub_date": "2014-06-19T17:45:38+00:00",
+      "image_url": "test_image.png",
       "content": "Namhoon. friends. ^^ Smile every day. ^.^ ^-^ !@#$%^&*()`_+|"
     }
   }

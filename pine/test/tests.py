@@ -24,8 +24,8 @@ class CoreTestCase(TestCase):
             'string_1': '1'
         }
 
-        c = Client()
-        response = c.post(URL, content_type='application/json', data=json.dumps(request_json)).content.decode('utf-8')
+        # c = Client()
+        # response = c.post(URL, content_type='application/json', data=json.dumps(request_json)).content.decode('utf-8')
         # print(response)
 
     def test_get_request_mirror(self):
@@ -42,7 +42,7 @@ class CoreTestCase(TestCase):
             'string_1': '1'
         }
 
-        c = Client()
-        uri = parse.urlencode(request_json)
-        response = c.get(URL+'?'+uri)
+        # c = Client()
+        # uri = parse.urlencode(request_json)
+        # response = c.get(URL+'?'+uri)
         # print(response)
