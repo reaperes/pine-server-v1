@@ -1,3 +1,4 @@
+import re
 import json
 from urllib import parse
 
@@ -94,3 +95,4 @@ class IntegrationThreadTestCase(TestCase):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA][0]['content'] == 'post_friend_thread_json'
+        assert re.search(r'.*png_sample\.png.*', response[Protocol.DATA][0]['image_url'])
