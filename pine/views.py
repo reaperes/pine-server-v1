@@ -1,3 +1,4 @@
+import re
 import json
 import logging
 
@@ -31,7 +32,7 @@ def pine_thread(request):
 
 """ post thread json protocol
 
-request:
+request 1/2:
     Content-Type: multipart/form-data
     ---------- Boundary ----------
     Content-Disposition: form-data; name='json'
@@ -45,6 +46,15 @@ request:
     Content-Disposition: form-data; name='bg_image_file'; filename="filename_here.png"
     Content-Type: image/png
     ... \x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x01 ...
+
+request 2/2:
+    Content-Type: application/json;
+    {
+        author:     (Number, Users.id),
+        is_public:  (Boolean),
+        content:    (String, content < 200)
+    }
+
 
 response:
     Content-Type: application/json;
@@ -63,20 +73,36 @@ def post_thread(request):
     }
 
     try:
-        req_json = json.loads(request.REQUEST['json'])
-        req_file = request.FILES['bg_image_file']
-        file_name = fileutil.generate_file_name(req_file.name)
 
-        # save file
-        default_storage.save(settings.MEDIA_DIR + '/' + file_name, ContentFile(req_file.read()))
+        if re.search(r'.*multipart/form-data.*', request.META['CONTENT_TYPE']):
+            req_json = json.loads(request.REQUEST['json'])
+            req_file = request.FILES['bg_image_file']
 
-        # insert db
-        user = Users.objects.get(id=int(req_json['author']))
-        thread = Threads.objects.create(author=user,
-                                        is_public=bool(req_json['is_public']),
-                                        pub_date=timezone.now(),
-                                        image_url=file_name,
-                                        content=req_json['content'])
+            file_name = fileutil.generate_file_name(req_file.name)
+
+            # save file
+            default_storage.save(settings.MEDIA_DIR + '/' + file_name, ContentFile(req_file.read()))
+
+            # insert db
+            user = Users.objects.get(id=int(req_json['author']))
+            thread = Threads.objects.create(author=user,
+                                            is_public=bool(req_json['is_public']),
+                                            pub_date=timezone.now(),
+                                            image_url=file_name,
+                                            content=req_json['content'])
+
+        else:
+            req_json = json.loads(request.body.decode('utf-8'))
+            image_url = ''
+
+            # insert db
+            user = Users.objects.get(id=int(req_json['author']))
+            thread = Threads.objects.create(author=user,
+                                            is_public=bool(req_json['is_public']),
+                                            pub_date=timezone.now(),
+                                            image_url=image_url,
+                                            content=req_json['content'])
+
         thread.readers.add(user.id)
         thread.readers.add(*[f for f in user.friends.only('pk')])
 

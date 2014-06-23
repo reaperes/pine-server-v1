@@ -42,7 +42,7 @@ class UnitThreadTestCase(TestCase):
         }
         self.image_path = settings.BASE_DIR + '/resources/png_sample.png'
 
-    def test_post_friends_thread(self):
+    def test_post_friends_thread_with_image(self):
         c = Client()
         response = None
         with open(settings.BASE_DIR + '/resources/png_sample.png', 'rb') as fp:
@@ -52,6 +52,14 @@ class UnitThreadTestCase(TestCase):
             }
             response = c.post(URL, j).content.decode('utf-8')
             response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+    def test_post_friends_thread_no_image(self):
+        c = Client()
+        response = c.post(URL,
+                          data=json.dumps(self.post_friend_thread_json),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
     def test_get_friends_thread(self):
@@ -96,3 +104,18 @@ class IntegrationThreadTestCase(TestCase):
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA][0]['content'] == 'post_friend_thread_json'
         assert re.search(r'.*png_sample\.png.*', response[Protocol.DATA][0]['image_url'])
+
+    def test_get_valid_content_after_post_friend_thread_no_image(self):
+        c = Client()
+        response = c.post(URL,
+                          data=json.dumps(self.post_friend_thread_json),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        uri = parse.urlencode(self.get_friend_threads_json)
+        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA][0]['content'] == 'post_friend_thread_json'
+        assert response[Protocol.DATA][0]['image_url'] == ''

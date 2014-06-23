@@ -26,7 +26,7 @@ class Threads(models.Model):
     is_public = models.BooleanField()
     readers = models.ManyToManyField(Users, related_name='readable')
     pub_date = models.DateTimeField()
-    image_url = models.CharField(max_length=256)
+    image_url = models.CharField(max_length=256, default='')
     content = models.CharField(max_length=200)
 
     class Meta:
