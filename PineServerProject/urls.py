@@ -10,5 +10,6 @@ urlpatterns = patterns('',
 
     # url(r'^admin/', include(admin.site.urls)),
     url(r'^test.*', 'pine.test.views.pine_test'),
-    url(r'^threads$', 'pine.views.pine_thread')
+    url(r'^threads$', 'pine.views.pine_thread'),
+    url(r'^threads/(?P<thread_id>.*)/like', 'pine.views.post_thread_like')
 )

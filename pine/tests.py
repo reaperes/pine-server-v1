@@ -42,6 +42,10 @@ class UnitThreadTestCase(TestCase):
         }
         self.image_path = settings.BASE_DIR + '/resources/png_sample.png'
 
+        self.post_thread_like_json = {
+            'user': 1
+        }
+
     def test_post_friends_thread_with_image(self):
         c = Client()
         response = None
@@ -69,9 +73,17 @@ class UnitThreadTestCase(TestCase):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
+    def test_post_thread_like(self):
+        c = Client()
+        response = c.post(URL+'/8/like',
+                          data=json.dumps(self.post_thread_like_json),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
 
 class IntegrationThreadTestCase(TestCase):
-    fixtures = ['users.json']
+    fixtures = ['users.json', 'threads.json']
 
     def setUp(self):
         self.post_friend_thread_json = {
@@ -84,6 +96,9 @@ class IntegrationThreadTestCase(TestCase):
             'is_friend': True,
             'offset': 0,
             'limit': 1
+        }
+        self.post_thread_like_json = {
+            'user': 1
         }
 
     def test_get_valid_content_after_post_friend_thread(self):
@@ -119,3 +134,31 @@ class IntegrationThreadTestCase(TestCase):
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA][0]['content'] == 'post_friend_thread_json'
         assert response[Protocol.DATA][0]['image_url'] == ''
+
+    def test_get_post_like_count_after_post_thread_like(self):
+        c = Client()
+        get_threads_json = {
+            'user': 1,
+            'is_friend': True,
+            'offset': 0,
+            'limit': 1
+        }
+        uri = parse.urlencode(get_threads_json)
+        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA][0]['is_user_like'] is False
+        assert response[Protocol.DATA][0]['like'] == 7
+
+        response = c.post(URL+'/8/like',
+                          data=json.dumps(self.post_thread_like_json),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA][0]['is_user_like'] is True
+        assert response[Protocol.DATA][0]['like'] == 8
+

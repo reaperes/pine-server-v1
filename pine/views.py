@@ -141,10 +141,12 @@ response:
         data:       (Array)
         [
             {
-                id:         (Number, Threads.id),
-                pub_date:   (String, '%Y-%m-%d %H:%M:%S'),
-                image_url:  (String, image url here),
-                content:    (String, content <= 200)
+                id:           (Number, Threads.id),
++                like:         (Number, how many users like),
++                is_user_like: (Boolean, if user like or not),
+                pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
+                image_url:    (String, image url here),
+                content:      (String, content <= 200)
             },
             {
                 ...
@@ -174,10 +176,13 @@ def get_threads(request):
             threads = Threads.objects.filter(is_public=True)[offset:limit]
 
         for thread in threads:
+            likes = [user.id for user in thread.likes.only('id')]
+
             response_data[Protocol.DATA].append({
                 'id': thread.id,
-                'is_public': thread.is_public,
                 'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
+                'like': len(likes),
+                'is_user_like': user in likes,
                 'image_url': thread.image_url,
                 'content': thread.content
             })
@@ -191,5 +196,46 @@ def get_threads(request):
     # if malformed protocol
     except AssertionError as err:
         response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
+""" post thread like json protocol
+
+request 1:
+    Content-Type: application/json;
+    {
++        user:       (Number) Users.id
+    }
+
+
+response:
+    Content-Type: application/json;
+    {
++        result:     (String, SUCCESS or FAIL),
++        message:    (String, error message)
+    }
+
+"""
+
+
+def post_thread_like(request, thread_id):
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: ''
+    }
+
+    req_json = json.loads(request.body.decode('utf-8'))
+    user_id = int(req_json['user'])
+
+    # update db
+    thread = Threads.objects.get(id=int(thread_id))
+    thread_likes = [user.id for user in thread.likes.only('id')]
+    if user_id in thread_likes:
+        response_data[Protocol.MESSAGE] = 'Warn: User has already liked'
+    else:
+        thread.likes.add(user_id)
+
+    response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')

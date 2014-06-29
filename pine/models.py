@@ -25,6 +25,7 @@ class Threads(models.Model):
     author = models.ForeignKey(Users, related_name='authorized')
     is_public = models.BooleanField()
     readers = models.ManyToManyField(Users, related_name='readable')
+    likes = models.ManyToManyField(Users, related_name='likes')
     pub_date = models.DateTimeField()
     image_url = models.CharField(max_length=256, default='')
     content = models.CharField(max_length=200)
@@ -40,10 +41,18 @@ class Threads(models.Model):
             else:
                 readers = str(reader.id)
 
+        likes = ''
+        for like in self.likes.all():
+            if likes != '':
+                likes += ', ' + str(like.id)
+            else:
+                likes = str(like.id)
+
         return ('pk: ' + str(self.pk)
                 + ', author: ' + str(self.author.id)
                 + ', is_public:' + str(self.is_public)
                 + ', readers: [' + readers
+                + '], likes: [' + likes
                 + '], pub_date: ' + str(self.pub_date)
                 + ', image_url: ' + self.image_url
                 + ', content: ' + self.content)
