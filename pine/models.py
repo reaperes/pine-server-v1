@@ -6,18 +6,14 @@ class Users(models.Model):
     phone = models.CharField(max_length=15)
     friends = models.ManyToManyField('self', symmetrical=True)
     followings = models.ManyToManyField('self', symmetrical=False, related_name='followers')
+    blocks = models.ManyToManyField('self', symmetrical=False, related_name='blocked')
 
     def __str__(self):
-        friends = ''
-        for friend in self.friends.all():
-            if friends != '':
-                friends += ', ' + str(friend.id)
-            else:
-                friends = str(friend.id)
         return ('pk: ' + str(self.pk)
                 + ', phone: ' + self.phone
-                + ', friends: [' + friends
-                + '], followings: [' + self.followings
+                + ', friends: [' + ' '.join(str(n) for n in [user.id for user in self.friends.only('id')])
+                + '], followings: [' + ' '.join(str(n) for n in [user.id for user in self.followings.only('id')])
+                + '], blocks: [' + ' '.join(str(n) for n in [user.id for user in self.blocks.only('id')])
                 + ']')
 
 
@@ -26,6 +22,7 @@ class Threads(models.Model):
     is_public = models.BooleanField()
     readers = models.ManyToManyField(Users, related_name='readable')
     likes = models.ManyToManyField(Users, related_name='likes')
+    reports = models.ManyToManyField(Users, related_name='reports')
     pub_date = models.DateTimeField()
     image_url = models.CharField(max_length=256, default='')
     content = models.CharField(max_length=200)
@@ -34,25 +31,12 @@ class Threads(models.Model):
         ordering = ['-pub_date']
 
     def __str__(self):
-        readers = ''
-        for reader in self.readers.all():
-            if readers != '':
-                readers += ', ' + str(reader.id)
-            else:
-                readers = str(reader.id)
-
-        likes = ''
-        for like in self.likes.all():
-            if likes != '':
-                likes += ', ' + str(like.id)
-            else:
-                likes = str(like.id)
-
         return ('pk: ' + str(self.pk)
                 + ', author: ' + str(self.author.id)
                 + ', is_public:' + str(self.is_public)
-                + ', readers: [' + readers
-                + '], likes: [' + likes
+                + ', readers: [' + ' '.join(str(n) for n in [user.id for user in self.readers.only('id')])
+                + '], likes: [' + ' '.join(str(n) for n in [user.id for user in self.likes.only('id')])
+                + '], reports: [' + ' '.join(str(n) for n in [user.id for user in self.reports.only('id')])
                 + '], pub_date: ' + str(self.pub_date)
                 + ', image_url: ' + self.image_url
                 + ', content: ' + self.content)
