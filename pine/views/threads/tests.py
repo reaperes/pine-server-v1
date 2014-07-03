@@ -57,7 +57,7 @@ class UnitThreadTestCase(TestCase):
     def test_post_friends_thread_with_image(self):
         c = Client()
         response = None
-        with open(settings.BASE_DIR + '/resources/png_sample.png', 'rb') as fp:
+        with open(settings.BASE_DIR + '/resources/jpeg_sample.jpeg', 'rb') as fp:
             j = {
                 'json': json.dumps(self.post_friend_thread_json),
                 'bg_image_file': fp

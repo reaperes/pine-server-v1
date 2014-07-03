@@ -43,7 +43,7 @@ request 1/2:
         content:    (String, content < 200)
     }
     ---------- Boundary ----------
-    Content-Disposition: form-data; name='bg_image_file'; filename="filename_here.png"
+    Content-Disposition: form-data; name='bg_image_file'; filename="png_or_jpg_filename_here.jpg"
     Content-Type: image/png
     ... \x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x01 ...
 
@@ -218,6 +218,7 @@ response:
 """
 
 
+@csrf_exempt
 def post_thread_like(request, thread_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -259,6 +260,7 @@ response:
 """
 
 
+@csrf_exempt
 def post_thread_unlike(request, thread_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -305,6 +307,7 @@ response:
 """
 
 
+@csrf_exempt
 def post_report_thread(request, thread_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
