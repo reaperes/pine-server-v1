@@ -199,6 +199,64 @@ def get_threads(request):
     return HttpResponse(json.dumps(response_data), content_type='application/json')
 
 
+""" get thread offset url protocol
+
+request:
+    /threads/<thread_id>/offset?user={id}&is_friend={boolean}
+
+    parameter
+        thread_id:      (Number, Thread id)
+        user:           (Number, User.id)
+        is_friend:      (Boolean, friend feed or public feed
+
+
+response:
+    Content-Type: application/json;
+    {
+        result:     (String, SUCCESS('pine') or FAIL('not pine')),
+        message:    (String, error message),
+        offset:     (Number, offset number when you request)
+    }
+
+"""
+
+
+@csrf_exempt
+def get_thread_offset(request, thread_id):
+    if request.method == 'POST':
+        return HttpResponse(status=400)
+
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: '',
+    }
+
+    try:
+        thread_id = int(thread_id)
+        user_id = int(request.GET.get('user'))
+        is_friend = request.GET.get('is_friend')
+
+        if is_friend == 'true' or is_friend == 'True':
+            threads = Threads.objects.filter(readers__id=user_id, is_public=False)[0:100]
+        else:
+            threads = Threads.objects.filter(is_public=True)[0:100]
+
+        idx = 0
+        for thread in threads:
+            if thread_id == thread.id:
+                response_data[Protocol.RESULT] = Protocol.SUCCESS
+                response_data['offset'] = idx
+                return HttpResponse(json.dumps(response_data), content_type='application/json')
+            idx += 1
+
+        response_data[Protocol.MESSAGE] = 'Cannot find thread id in offsets from 0 to 100.'
+
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
 """ post thread like json protocol
 
 request 1:

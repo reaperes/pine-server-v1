@@ -28,6 +28,17 @@ class UnitThreadTestCase(TestCase):
             'is_public': True,
             'content': 'Hello, Test content'
         }
+
+        self.get_friend_thread_offset = {
+            'user': 2,
+            'is_friend': True
+        }
+
+        self.get_public_thread_offset = {
+            'user': 2,
+            'is_friend': False
+        }
+
         self.get_friend_threads_json = {
             'user': 2,
             'is_friend': True,
@@ -73,6 +84,22 @@ class UnitThreadTestCase(TestCase):
                           content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+    def test_get_friend_thread_offset(self):
+        c = Client()
+        uri = parse.urlencode(self.get_friend_thread_offset)
+        response = c.get(URL+'/1/offset?'+uri, content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response['offset'] == 1
+
+    def test_get_public_thread_offset(self):
+        c = Client()
+        uri = parse.urlencode(self.get_public_thread_offset)
+        response = c.get(URL+'/2/offset?'+uri, content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response['offset'] == 3
 
     def test_get_friends_thread(self):
         c = Client()
