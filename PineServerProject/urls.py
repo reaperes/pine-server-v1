@@ -11,10 +11,10 @@ urlpatterns = patterns('',
     # url(r'^admin/', include(admin.site.urls)),
     url(r'^test.*', 'pine.test.views.pine_test'),
     url(r'^threads$', 'pine.views.threads.views.pine_thread'),
-    url(r'^threads/(?P<thread_id>.*)$', 'pine.views.threads.views.get_thread'),
-    url(r'^threads/(?P<thread_id>.*)/offset$', 'pine.views.threads.views.get_thread_offset'),
-    url(r'^threads/(?P<thread_id>.*)/like', 'pine.views.threads.views.post_thread_like'),
-    url(r'^threads/(?P<thread_id>.*)/unlike', 'pine.views.threads.views.post_thread_unlike'),
-    url(r'^threads/(?P<thread_id>.*)/report', 'pine.views.threads.views.post_report_thread'),
-    url(r'^users/(?P<block_user_id>.*)/block', 'pine.views.users.views.post_block_user')
+    url(r'^threads/(?P<thread_id>[0-9]+)$', 'pine.views.threads.views.get_thread'),
+    url(r'^threads/(?P<thread_id>[0-9]+)/offset$', 'pine.views.threads.views.get_thread_offset'),
+    url(r'^threads/(?P<thread_id>[0-9]+)/like', 'pine.views.threads.views.post_thread_like'),
+    url(r'^threads/(?P<thread_id>[0-9]+)/unlike', 'pine.views.threads.views.post_thread_unlike'),
+    url(r'^threads/(?P<thread_id>[0-9]+)/report', 'pine.views.threads.views.post_report_thread'),
+    url(r'^users/(?P<block_user_id>[0-9]+)/block', 'pine.views.users.views.post_block_user')
 )
