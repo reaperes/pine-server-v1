@@ -199,6 +199,67 @@ def get_threads(request):
     return HttpResponse(json.dumps(response_data), content_type='application/json')
 
 
+""" get thread protocol
+
+request:
+    /threads/<thread_id>?user={id}
+
+    parameter
+        thread_id:      (Number, Thread id)
+        user:           (Number, User.id)
+
+
+response:
+    Content-Type: application/json;
+    {
+        result:     (String, SUCCESS('pine') or FAIL('not pine')),
+        message:    (String, error message),
+        data:       (Array)
+        {
+            id:           (Number, Threads.id),
+            like:         (Number, how many users like),
+            is_user_like: (Boolean, if user like or not),
+            pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
+            image_url:    (String, image url here),
+            content:      (String, content <= 200)
+        }
+    }
+
+"""
+
+
+def get_thread(request, thread_id):
+    if request.method == 'POST':
+        return HttpResponse(status=400)
+
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: '',
+    }
+
+    try:
+        thread_id = int(thread_id)
+        user_id = int(request.GET.get('user'))
+
+        thread = Threads.objects.get(id=thread_id)
+
+        likes = [user.id for user in thread.likes.only('id')]
+        response_data[Protocol.DATA] = {
+            'id': thread.id,
+            'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
+            'like': len(likes),
+            'is_user_like': user_id in likes,
+            'image_url': thread.image_url,
+            'content': thread.content
+        }
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
 """ get thread offset url protocol
 
 request:

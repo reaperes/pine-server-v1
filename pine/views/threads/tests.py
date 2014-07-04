@@ -16,8 +16,6 @@ class UnitThreadTestCase(TestCase):
     fixtures = ['users.json', 'threads.json']
 
     def setUp(self):
-        self.factory = RequestFactory()
-
         self.post_friend_thread_json = {
             'author': 2,
             'is_public': False,
@@ -27,6 +25,10 @@ class UnitThreadTestCase(TestCase):
             'author': 2,
             'is_public': True,
             'content': 'Hello, Test content'
+        }
+
+        self.get_thread = {
+            'user': 2
         }
 
         self.get_friend_thread_offset = {
@@ -84,6 +86,14 @@ class UnitThreadTestCase(TestCase):
                           content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+    def test_get_thread(self):
+        c = Client()
+        uri = parse.urlencode(self.get_thread)
+        response = c.get(URL+'/1?'+uri, content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA]['id'] == 1
 
     def test_get_friend_thread_offset(self):
         c = Client()
