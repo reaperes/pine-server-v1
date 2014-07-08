@@ -451,3 +451,61 @@ def post_report_thread(request, thread_id):
         response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
+""" post block thread(user) protocol
+
+request:
+    Content-Type: application/json;
+    {
+        user:       (Number, Users.id)
+    }
+
+response:
+    Content-Type: application/json;
+    {
+        result:     (String, SUCCESS or FAIL),
+        message:    (String, error message)
+    }
+
+"""
+
+
+@csrf_exempt
+def post_block_thread(request, thread_id):
+    if request.method == 'GET':
+        return HttpResponse(status=400)
+
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: ''
+    }
+
+    try:
+        req_json = json.loads(request.body.decode('utf-8'))
+        block_thread_id = int(thread_id)
+        block_thread = Threads.objects.get(id=block_thread_id)
+        block_user = block_thread.author
+        user_id = int(req_json['user'])
+        user = Users.objects.get(id=user_id)
+
+        if block_thread.author in user.blocks.only('id'):
+            response_data = {
+                Protocol.RESULT: Protocol.SUCCESS,
+                Protocol.MESSAGE: 'Warn: User already blocked.'
+            }
+
+        else:
+            user.blocks.add(block_user)
+            user.friends.remove(block_user)
+            block_user.friends.remove(user)
+
+            response_data = {
+                Protocol.RESULT: Protocol.SUCCESS,
+                Protocol.MESSAGE: ''
+            }
+
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')
