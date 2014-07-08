@@ -1,19 +1,20 @@
 from django.db import models
 
-from pine.views.users.models import Users
+from pine.models.users import Users
 
 
 class Threads(models.Model):
     author = models.ForeignKey(Users, related_name='authorized')
     is_public = models.BooleanField()
     readers = models.ManyToManyField(Users, related_name='readable')
-    likes = models.ManyToManyField(Users, related_name='likes')
-    reports = models.ManyToManyField(Users, related_name='reports')
+    likes = models.ManyToManyField(Users, related_name='likeThreads')
+    reports = models.ManyToManyField(Users, related_name='reportThreads')
     pub_date = models.DateTimeField()
     image_url = models.CharField(max_length=256, default='')
     content = models.CharField(max_length=200)
 
     class Meta:
+        app_label = 'pine'
         ordering = ['-pub_date']
 
     def __str__(self):

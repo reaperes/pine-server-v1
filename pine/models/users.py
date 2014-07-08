@@ -7,6 +7,9 @@ class Users(models.Model):
     followings = models.ManyToManyField('self', symmetrical=False, related_name='followers')
     blocks = models.ManyToManyField('self', symmetrical=False, related_name='blocked')
 
+    class Meta:
+        app_label = 'pine'
+
     def __str__(self):
         return ('pk: ' + str(self.pk)
                 + ', phone: ' + self.phone
