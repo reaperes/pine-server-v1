@@ -276,7 +276,7 @@ response:
     {
         result:     (String, SUCCESS('pine') or FAIL('not pine')),
         message:    (String, error message),
-        offset:     (Number, offset number when you request)
+        offset:     (Number, offset number when you request, 0 <= x < 300)
     }
 
 """
@@ -298,9 +298,9 @@ def get_thread_offset(request, thread_id):
         is_friend = request.GET.get('is_friend')
 
         if is_friend == 'true' or is_friend == 'True':
-            threads = Threads.objects.filter(readers__id=user_id, is_public=False)[0:100]
+            threads = Threads.objects.filter(readers__id=user_id, is_public=False)[0:299]
         else:
-            threads = Threads.objects.filter(is_public=True)[0:100]
+            threads = Threads.objects.filter(is_public=True)[0:299]
 
         idx = 0
         for thread in threads:
@@ -310,7 +310,7 @@ def get_thread_offset(request, thread_id):
                 return HttpResponse(json.dumps(response_data), content_type='application/json')
             idx += 1
 
-        response_data[Protocol.MESSAGE] = 'Cannot find thread id in offsets from 0 to 100.'
+        response_data[Protocol.MESSAGE] = 'Cannot find thread id in offsets from 0 to 299.'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
