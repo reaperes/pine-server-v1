@@ -13,7 +13,7 @@ URL = '/threads'
 
 
 class UnitThreadTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json']
+    fixtures = ['users.json', 'threads.json', 'comments.json']
 
     def setUp(self):
         self.post_friend_thread_json = {
@@ -151,6 +151,14 @@ class UnitThreadTestCase(TestCase):
                           content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+    def test_get_thread_comment(self):
+        c = Client()
+        uri = parse.urlencode(self.get_friend_threads_json)
+        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA][0]['comment'] == 1
 
 
 class IntegrationThreadTestCase(TestCase):

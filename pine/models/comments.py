@@ -14,7 +14,7 @@ class Comments(models.Model):
 
     class Meta:
         app_label = 'pine'
-        ordering = ['-pub_date']
+        ordering = ['pub_date']
 
     def __str__(self):
         return ('pk: ' + str(self.pk)

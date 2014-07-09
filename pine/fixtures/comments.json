@@ -1,0 +1,50 @@
+[
+  {
+    "model": "pine.comments",
+    "pk": 1,
+    "fields": {
+      "author": 1,
+      "thread": 1,
+      "likes": [1, 2, 3],
+      "reports": [4],
+      "pub_date": "2014-06-01T00:00:01+00:00",
+      "content": "Namhoon's first comment."
+    }
+  },
+  {
+    "model": "pine.comments",
+    "pk": 2,
+    "fields": {
+      "author": 8,
+      "thread": 1,
+      "likes": [],
+      "reports": [],
+      "pub_date": "2014-06-01T00:00:02+00:00",
+      "content": "랄랄라 ^-^"
+    }
+  },
+  {
+    "model": "pine.comments",
+    "pk": 3,
+    "fields": {
+      "author": 4,
+      "thread": 1,
+      "likes": [],
+      "reports": [],
+      "pub_date": "2014-06-01T00:00:03+00:00",
+      "content": "hello"
+    }
+  },
+  {
+    "model": "pine.comments",
+    "pk": 4,
+    "fields": {
+      "author": 1,
+      "thread": 8,
+      "likes": [],
+      "reports": [],
+      "pub_date": "2014-06-19T17:45:39+00:00",
+      "content": "comment"
+    }
+  }
+]

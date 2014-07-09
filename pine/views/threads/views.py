@@ -145,7 +145,8 @@ response:
                 is_user_like: (Boolean, if user like or not),
                 pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
                 image_url:    (String, image url here),
-                content:      (String, content <= 200)
+                content:      (String, content <= 200),
+                comment:      (Number, how many comments commented)
             },
             {
                 ...
@@ -183,7 +184,8 @@ def get_threads(request):
                 'like': len(likes),
                 'is_user_like': user_id in likes,
                 'image_url': thread.image_url,
-                'content': thread.content
+                'content': thread.content,
+                'comment': len(thread.comments_set.all())
             })
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
@@ -221,7 +223,8 @@ response:
             is_user_like: (Boolean, if user like or not),
             pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
             image_url:    (String, image url here),
-            content:      (String, content <= 200)
+            content:      (String, content <= 200),
+            comment:      (Number, how many comments commented)
         }
     }
 
@@ -250,7 +253,8 @@ def get_thread(request, thread_id):
             'like': len(likes),
             'is_user_like': user_id in likes,
             'image_url': thread.image_url,
-            'content': thread.content
+            'content': thread.content,
+            'comment': len(thread.comments_set.all())
         }
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 

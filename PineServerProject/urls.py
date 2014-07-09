@@ -16,5 +16,6 @@ urlpatterns = patterns('',
     url(r'^threads/(?P<thread_id>[0-9]+)/like', 'pine.views.threads.views.post_thread_like'),
     url(r'^threads/(?P<thread_id>[0-9]+)/unlike', 'pine.views.threads.views.post_thread_unlike'),
     url(r'^threads/(?P<thread_id>[0-9]+)/report', 'pine.views.threads.views.post_report_thread'),
-    url(r'^threads/(?P<thread_id>[0-9]+)/block', 'pine.views.threads.views.post_block_thread')
+    url(r'^threads/(?P<thread_id>[0-9]+)/block', 'pine.views.threads.views.post_block_thread'),
+    url(r'^threads/(?P<thread_id>[0-9]+)/comments$', 'pine.views.threads.comments.views.post_and_get_comments')
 )
