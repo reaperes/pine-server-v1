@@ -140,3 +140,193 @@ def post_comment(request, thread_id):
         response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
+""" post comment like json protocol
+
+request:
+    Content-Type: application/json;
+    {
+        user:       (Number, Users.id)
+    }
+
+response:
+    Content-Type: application/json;
+    {
+        result:     (String, SUCCESS or FAIL),
+        message:    (String, error message)
+    }
+
+"""
+
+
+@csrf_exempt
+def post_comment_like(request, comment_id):
+    if request.method == 'GET':
+        return HttpResponse(status=400)
+
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: '',
+    }
+
+    try:
+        comment_id = int(comment_id)
+
+        req_json = json.loads(request.body.decode('utf-8'))
+        user_id = int(req_json['user'])
+
+        comment = Comments.objects.get(id=comment_id)
+        comment_likes = [user.id for user in comment.likes.only('id')]
+        if user_id in comment_likes:
+            response_data[Protocol.MESSAGE] = 'Warn: User has already liked'
+        else:
+            comment.likes.add(user_id)
+
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
+""" post comment unlike json protocol
+
+request:
+    Content-Type: application/json;
+    {
+        user:       (Number, Users.id)
+    }
+
+response:
+    Content-Type: application/json;
+    {
+        result:     (String, SUCCESS or FAIL),
+        message:    (String, error message)
+    }
+
+"""
+
+
+@csrf_exempt
+def post_comment_unlike(request, comment_id):
+    if request.method == 'GET':
+        return HttpResponse(status=400)
+
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: '',
+    }
+
+    try:
+        comment_id = int(comment_id)
+
+        req_json = json.loads(request.body.decode('utf-8'))
+        user_id = int(req_json['user'])
+
+        comment = Comments.objects.get(id=comment_id)
+        comment_likes = [user.id for user in comment.likes.only('id')]
+        if user_id not in comment_likes:
+            response_data[Protocol.MESSAGE] = 'Warn: User has never liked'
+        else:
+            comment.likes.remove(user_id)
+
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
+""" post comment report json protocol
+
+request:
+    Content-Type: application/json;
+    {
+        user:       (Number, Users.id)
+    }
+
+response:
+    Content-Type: application/json;
+    {
+        result:     (String, SUCCESS or FAIL),
+        message:    (String, error message)
+    }
+
+"""
+
+
+@csrf_exempt
+def post_comment_report(request, comment_id):
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: ''
+    }
+
+    try:
+        req_json = json.loads(request.body.decode('utf-8'))
+
+        user_id = int(req_json['user'])
+        user = Users.objects.get(id=user_id)
+
+        report_comment_id = int(comment_id)
+
+        report_comment = Threads.objects.get(id=report_comment_id)
+        report_comment.reports.add(user)
+
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
+""" post comment block json protocol
+
+request:
+    Content-Type: application/json;
+    {
+        user:       (Number, Users.id)
+    }
+
+response:
+    Content-Type: application/json;
+    {
+        result:     (String, SUCCESS or FAIL),
+        message:    (String, error message)
+    }
+
+"""
+
+
+@csrf_exempt
+def post_comment_block(request, comment_id):
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: ''
+    }
+
+    try:
+        comment_id = int(comment_id)
+        req_json = json.loads(request.body.decode('utf-8'))
+
+        user_id = int(req_json['user'])
+        user = Users.objects.get(id=user_id)
+
+        block_comment = Comments.objects.get(id=comment_id)
+        block_user = block_comment.author
+
+        if block_user not in user.blocks.only('id'):
+            user.blocks.add(block_user)
+            user.friends.remove(block_user)
+            block_user.friends.remove(user)
+
+            response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')

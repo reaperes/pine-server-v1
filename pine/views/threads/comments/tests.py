@@ -21,6 +21,18 @@ class UnitThreadTestCase(TestCase):
             'user': 1,
             'content': 'Hello, world.'
         }
+        self.post_comment_like_json = {
+            'user': 1
+        }
+        self.post_comment_unlike_json = {
+            'user': 1
+        }
+        self.post_comment_report_json = {
+            'user': 5
+        }
+        self.post_comment_block_json = {
+            'user': 1
+        }
 
     def test_get_thread_comment(self):
         c = Client()
@@ -53,6 +65,41 @@ class UnitThreadTestCase(TestCase):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
+    def test_post_comment_like(self):
+        c = Client()
+        response = c.post('/comments/2/like',
+                          data=json.dumps(self.post_comment_like_json),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+    def test_post_comment_unlike(self):
+        c = Client()
+        response = c.post('/comments/1/unlike',
+                          data=json.dumps(self.post_comment_unlike_json),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.MESSAGE] == ''
+
+    def test_post_comment_report(self):
+        c = Client()
+        response = c.post('/comments/1/report',
+                          data=json.dumps(self.post_comment_report_json),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.MESSAGE] == ''
+
+    def test_post_comment_block(self):
+        c = Client()
+        response = c.post('/comments/2/block',
+                          data=json.dumps(self.post_comment_report_json),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.MESSAGE] == ''
+
 
 class IntegrationThreadTestCase(TestCase):
     fixtures = ['users.json', 'threads.json', 'comments.json']
@@ -80,3 +127,59 @@ class IntegrationThreadTestCase(TestCase):
         response = json.loads(c.get('/threads/2/comments?' + uri).content.decode('utf-8'))
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert len(response[Protocol.DATA]) == 1
+
+    def test_get_comment_like_after_post_comment_like(self):
+        get_thread_comments_json = {
+            'user': 1
+        }
+        c = Client()
+        uri = parse.urlencode(get_thread_comments_json)
+        response = json.loads(c.get('/threads/1/comments?'+uri).content.decode('utf-8'))
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        before_comment_like_count = response[Protocol.DATA][0]['likes']
+
+        post_comment_like_json = {
+            'user': 4,
+        }
+        response = c.post('/comments/1/like',
+                          data=json.dumps(post_comment_like_json),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        get_thread_comments_json = {
+            'user': 1
+        }
+        c = Client()
+        uri = parse.urlencode(get_thread_comments_json)
+        response = json.loads(c.get('/threads/1/comments?'+uri).content.decode('utf-8'))
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA][0]['likes'] == before_comment_like_count + 1
+
+    def test_get_comment_like_after_post_comment_unlike(self):
+        get_thread_comments_json = {
+            'user': 1
+        }
+        c = Client()
+        uri = parse.urlencode(get_thread_comments_json)
+        response = json.loads(c.get('/threads/1/comments?'+uri).content.decode('utf-8'))
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        before_comment_like_count = response[Protocol.DATA][0]['likes']
+
+        post_comment_unlike_json = {
+            'user': 1,
+        }
+        response = c.post('/comments/1/unlike',
+                          data=json.dumps(post_comment_unlike_json),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        get_thread_comments_json = {
+            'user': 1
+        }
+        c = Client()
+        uri = parse.urlencode(get_thread_comments_json)
+        response = json.loads(c.get('/threads/1/comments?'+uri).content.decode('utf-8'))
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA][0]['likes'] == before_comment_like_count - 1
