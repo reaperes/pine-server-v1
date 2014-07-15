@@ -17,9 +17,9 @@ urlpatterns = patterns('',
     url(r'^threads/(?P<thread_id>[0-9]+)/unlike', 'pine.views.threads.views.post_thread_unlike'),
     url(r'^threads/(?P<thread_id>[0-9]+)/report', 'pine.views.threads.views.post_report_thread'),
     url(r'^threads/(?P<thread_id>[0-9]+)/block', 'pine.views.threads.views.post_block_thread'),
-    url(r'^threads/(?P<thread_id>[0-9]+)/comments$', 'pine.views.threads.comments.views.post_and_get_comments'),
-    url(r'^comments/(?P<comment_id>[0-9]+)/like', 'pine.views.threads.comments.views.post_comment_like'),
-    url(r'^comments/(?P<comment_id>[0-9]+)/unlike', 'pine.views.threads.comments.views.post_comment_unlike'),
-    url(r'^comments/(?P<comment_id>[0-9]+)/report', 'pine.views.threads.comments.views.post_comment_report'),
-    url(r'^comments/(?P<comment_id>[0-9]+)/block', 'pine.views.threads.comments.views.post_comment_block')
+    url(r'^threads/(?P<thread_id>[0-9]+)/comments$', 'pine.views.comments.views.post_and_get_comments'),
+    url(r'^comments/(?P<comment_id>[0-9]+)/like', 'pine.views.comments.views.post_comment_like'),
+    url(r'^comments/(?P<comment_id>[0-9]+)/unlike', 'pine.views.comments.views.post_comment_unlike'),
+    url(r'^comments/(?P<comment_id>[0-9]+)/report', 'pine.views.comments.views.post_comment_report'),
+    url(r'^comments/(?P<comment_id>[0-9]+)/block', 'pine.views.comments.views.post_comment_block')
 )

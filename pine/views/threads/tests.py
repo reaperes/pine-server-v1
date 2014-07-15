@@ -4,7 +4,6 @@ from urllib import parse
 
 from django.test import TestCase
 from django.test.client import Client
-from django.test.client import RequestFactory
 from django.conf import settings
 
 from pine.pine import Protocol
