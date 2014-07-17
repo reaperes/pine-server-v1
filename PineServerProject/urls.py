@@ -21,5 +21,5 @@ urlpatterns = patterns('',
     url(r'^comments/(?P<comment_id>[0-9]+)/like', 'pine.views.comments.views.post_comment_like'),
     url(r'^comments/(?P<comment_id>[0-9]+)/unlike', 'pine.views.comments.views.post_comment_unlike'),
     url(r'^comments/(?P<comment_id>[0-9]+)/report', 'pine.views.comments.views.post_comment_report'),
-    url(r'^comments/(?P<comment_id>[0-9]+)/block', 'pine.views.comments.views.post_comment_block')
+    url(r'^comments/(?P<comment_id>[0-9]+)/block', 'pine.views.comments.views.post_comment_block'),
 )
