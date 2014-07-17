@@ -8,7 +8,7 @@ DATABASES = {
         'NAME': 'pine',
         'USER': 'pine',
         'PASSWORD': 'shltlsrudwjfeks',
-        'HOST': '125.209.194.90',
+        'HOST': '10.12.0.102',
         'PORT': '3306',
     }
 }
