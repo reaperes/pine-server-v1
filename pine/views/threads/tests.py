@@ -12,7 +12,7 @@ URL = '/threads'
 
 
 class UnitThreadTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json', 'comments.json']
+    fixtures = ['users.json', 'threads.json', 'comments.json', 'phones.json']
 
     def setUp(self):
         self.post_friend_thread_json = {
@@ -161,7 +161,7 @@ class UnitThreadTestCase(TestCase):
 
 
 class IntegrationThreadTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json']
+    fixtures = ['users.json', 'threads.json', 'phones.json']
 
     def setUp(self):
         self.post_friend_thread_json = {
@@ -338,7 +338,7 @@ class IntegrationThreadTestCase(TestCase):
 
 
 class ReportedBugTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json']
+    fixtures = ['users.json', 'threads.json', 'phones.json']
 
     def setUp(self):
         self.get_friend_threads_json = {

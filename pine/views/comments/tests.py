@@ -8,7 +8,7 @@ from pine.pine import Protocol
 
 
 class UnitThreadTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json', 'comments.json']
+    fixtures = ['users.json', 'threads.json', 'comments.json', 'phones.json']
 
     def setUp(self):
         self.get_thread_comments_json = {
@@ -99,7 +99,7 @@ class UnitThreadTestCase(TestCase):
 
 
 class IntegrationThreadTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json', 'comments.json']
+    fixtures = ['users.json', 'threads.json', 'comments.json', 'phones.json']
 
     def test_get_thread_comment_after_post_thread_comment(self):
         get_thread_comments_json = {
