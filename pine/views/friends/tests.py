@@ -16,23 +16,23 @@ class UnitThreadTestCase(TestCase):
         }
         self.post_friends_create_no_pine_user = {
             'user': 2,
-            'friend_phone': '01088888878'
+            'phone_numbers': ['01088888878', '01088888788']
         }
         self.post_friends_create_pine_user = {
             'user': 9,
-            'friend_phone': '01032080403'
+            'phone_numbers': ['01032080403']
         }
         self.post_friends_create_pine_user2 = {
             'user': 2,
-            'friend_phone': '01020863441'
+            'phone_numbers': ['01020863441']
         }
         self.post_friends_destroy_pine_user = {
             'user': 1,
-            'friend_phone': '01098590530'
+            'phone_numbers': ['01098590530']
         }
         self.post_friends_destroy_pine_user2 = {
             'user': 2,
-            'friend_phone': '01040099179'
+            'phone_numbers': ['01040099179']
         }
         self.get_handshake_friend_count = {
             'user': 1

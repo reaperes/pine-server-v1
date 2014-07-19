@@ -62,7 +62,8 @@ request:
     Content-Type: application/json;
     {
         user:           (Number, Users.id),
-        friend_phone:   (String, Friend's phone number)
+        phone_numbers:  (Array, Friend's phone numbers)
+        ["01012345678", ... ]
     }
 
 
@@ -89,30 +90,32 @@ def post_friends_create(request):
     try:
         req_json = json.loads(request.body.decode('utf-8'))
         user_id = req_json['user']
-        target_phone_number = req_json['friend_phone']
 
-        user = Users.objects.get(id=user_id)
+        phone_numbers = req_json['phone_numbers']
 
-        target_phone_id = Phones.objects.filter(phone_number=target_phone_number)
-        if target_phone_id.exists():
-            target_phone = target_phone_id[0]
-            target = Users.objects.get(phone=target_phone)
-            target_friend_phone_ids = [phone.id for phone in target.friend_phones.only('id')]
-            user.friend_phones.add(target_phone)
-            user_phone_id = user.phone.id
+        for target_phone_number in phone_numbers:
+            user = Users.objects.get(id=user_id)
 
-            flag_target_has_user_phone_id = user_phone_id in target_friend_phone_ids
+            target_phone_id = Phones.objects.filter(phone_number=target_phone_number)
+            if target_phone_id.exists():
+                target_phone = target_phone_id[0]
+                target = Users.objects.get(phone=target_phone)
+                target_friend_phone_ids = [phone.id for phone in target.friend_phones.only('id')]
+                user.friend_phones.add(target_phone)
+                user_phone_id = user.phone.id
 
-            if flag_target_has_user_phone_id:
-                user.friends.add(target)    # symmetrical model
-            elif flag_target_has_user_phone_id:
-                target.followings.add(user)
+                flag_target_has_user_phone_id = user_phone_id in target_friend_phone_ids
+
+                if flag_target_has_user_phone_id:
+                    user.friends.add(target)    # symmetrical model
+                elif flag_target_has_user_phone_id:
+                    target.followings.add(user)
+                else:
+                    user.followings.add(target)
+
             else:
-                user.followings.add(target)
-
-        else:
-            friend_phone = Phones.objects.create(phone_number=target_phone_number)
-            user.friend_phones.add(friend_phone)
+                friend_phone = Phones.objects.create(phone_number=target_phone_number)
+                user.friend_phones.add(friend_phone)
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
@@ -128,7 +131,8 @@ request:
     Content-Type: application/json;
     {
         user:           (Number, Users.id),
-        friend_phone:   (String, Friend's phone number)
+        phone_numbers:  (Array, Friend's phone numbers)
+        ["01012345678", ... ]
     }
 
 
@@ -156,24 +160,26 @@ def post_friends_destroy(request):
         req_json = json.loads(request.body.decode('utf-8'))
         user_id = req_json['user']
         user = Users.objects.get(id=user_id)
-        target_phone_number = req_json['friend_phone']
 
-        target_phone_query = Phones.objects.filter(phone_number=target_phone_number)
-        if target_phone_query.exists():
-            target_phone = target_phone_query[0]
-            target = Users.objects.get(phone=target_phone)
+        phone_numbers = req_json['phone_numbers']
 
-            user.friend_phones.remove(target_phone)
+        for target_phone_number in phone_numbers:
+            target_phone_query = Phones.objects.filter(phone_number=target_phone_number)
+            if target_phone_query.exists():
+                target_phone = target_phone_query[0]
+                target = Users.objects.get(phone=target_phone)
 
-            if user.friends.filter(id=target.id).exists():
-                user.friends.remove(target)
-                target.followings.add(user)
+                user.friend_phones.remove(target_phone)
 
-            if user.followings.filter(id=target.id).exists():
-                user.followings.remove(target)
+                if user.friends.filter(id=target.id).exists():
+                    user.friends.remove(target)
+                    target.followings.add(user)
 
-        else:
-            response_data[Protocol.MESSAGE] = 'Warn: ' + target_phone_number + " is not in user's phone book list."
+                if user.followings.filter(id=target.id).exists():
+                    user.followings.remove(target)
+
+            else:
+                response_data[Protocol.MESSAGE] += 'Warn: ' + target_phone_number + " is not in user's phone book list."
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
