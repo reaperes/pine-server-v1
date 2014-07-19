@@ -5,11 +5,10 @@ from django.test import TestCase
 from django.test.client import Client
 
 from pine.pine import Protocol
+from pine.views.tests_support import LoadFixtures
 
 
-class UnitThreadTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json', 'comments.json', 'phones.json']
-
+class UnitThreadTestCase(TestCase, LoadFixtures):
     def setUp(self):
         self.get_thread_comments_json = {
             'user': 1
@@ -98,9 +97,7 @@ class UnitThreadTestCase(TestCase):
         assert response[Protocol.MESSAGE] == ''
 
 
-class IntegrationThreadTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json', 'comments.json', 'phones.json']
-
+class IntegrationThreadTestCase(TestCase, LoadFixtures):
     def test_get_thread_comment_after_post_thread_comment(self):
         get_thread_comments_json = {
             'user': 1

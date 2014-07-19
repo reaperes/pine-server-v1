@@ -7,13 +7,12 @@ from django.test.client import Client
 from django.conf import settings
 
 from pine.pine import Protocol
+from pine.views.tests_support import LoadFixtures
 
 URL = '/threads'
 
 
-class UnitThreadTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json', 'comments.json', 'phones.json']
-
+class UnitThreadTestCase(TestCase, LoadFixtures):
     def setUp(self):
         self.post_friend_thread_json = {
             'author': 2,
@@ -160,9 +159,7 @@ class UnitThreadTestCase(TestCase):
         assert response[Protocol.DATA][0]['comment'] == 1
 
 
-class IntegrationThreadTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json', 'phones.json']
-
+class IntegrationThreadTestCase(TestCase, LoadFixtures):
     def setUp(self):
         self.post_friend_thread_json = {
             'author': 1,
@@ -337,9 +334,7 @@ class IntegrationThreadTestCase(TestCase):
         assert before_content == response[Protocol.DATA][0]['content']
 
 
-class ReportedBugTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json', 'phones.json']
-
+class ReportedBugTestCase(TestCase, LoadFixtures):
     def setUp(self):
         self.get_friend_threads_json = {
             'user': 2,

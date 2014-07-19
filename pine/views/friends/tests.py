@@ -5,10 +5,10 @@ from django.test import TestCase
 from django.test.client import Client
 
 from pine.pine import Protocol
+from pine.views.tests_support import LoadFixtures
 
 
-class UnitThreadTestCase(TestCase):
-    fixtures = ['users.json', 'threads.json', 'comments.json', 'phones.json']
+class UnitThreadTestCase(TestCase, LoadFixtures):
 
     def setUp(self):
         self.get_friends_list = {
