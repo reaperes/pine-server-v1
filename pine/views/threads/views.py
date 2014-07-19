@@ -141,8 +141,8 @@ response:
         [
             {
                 id:           (Number, Threads.id),
-                like:         (Number, how many users like),
-                is_user_like: (Boolean, if user like or not),
+                like_count:   (Number, how many users like),
+                liked:        (Boolean, if user like or not),
                 pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
                 image_url:    (String, image url here),
                 content:      (String, content <= 200),
@@ -181,8 +181,8 @@ def get_threads(request):
             response_data[Protocol.DATA].append({
                 'id': thread.id,
                 'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
-                'like': len(likes),
-                'is_user_like': user_id in likes,
+                'like_count': len(likes),
+                'liked': user_id in likes,
                 'image_url': thread.image_url,
                 'content': thread.content,
                 'comment': len(thread.comments_set.all())
@@ -219,8 +219,8 @@ response:
         data:       (Array)
         {
             id:           (Number, Threads.id),
-            like:         (Number, how many users like),
-            is_user_like: (Boolean, if user like or not),
+            like_count:   (Number, how many users like),
+            liked:        (Boolean, if user like or not),
             pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
             image_url:    (String, image url here),
             content:      (String, content <= 200),
@@ -250,8 +250,8 @@ def get_thread(request, thread_id):
         response_data[Protocol.DATA] = {
             'id': thread.id,
             'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
-            'like': len(likes),
-            'is_user_like': user_id in likes,
+            'like_count': len(likes),
+            'liked': user_id in likes,
             'image_url': thread.image_url,
             'content': thread.content,
             'comment': len(thread.comments_set.all())

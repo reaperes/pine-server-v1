@@ -38,8 +38,8 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA][0]['comment_user_id'] == 0
         assert response[Protocol.DATA][1]['comment_user_id'] == 1
-        assert response[Protocol.DATA][0]['likes'] == 3
-        assert response[Protocol.DATA][1]['likes'] == 0
+        assert response[Protocol.DATA][0]['like_count'] == 3
+        assert response[Protocol.DATA][1]['like_count'] == 0
         assert response[Protocol.DATA][0]['is_user_like'] is True
         assert response[Protocol.DATA][1]['is_user_like'] is False
         assert response[Protocol.DATA][0]['comment_type'] == 3
@@ -130,7 +130,7 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         uri = parse.urlencode(get_thread_comments_json)
         response = json.loads(c.get('/threads/1/comments?'+uri).content.decode('utf-8'))
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        before_comment_like_count = response[Protocol.DATA][0]['likes']
+        before_comment_like_count = response[Protocol.DATA][0]['like_count']
 
         post_comment_like_json = {
             'user': 4,
@@ -148,7 +148,7 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         uri = parse.urlencode(get_thread_comments_json)
         response = json.loads(c.get('/threads/1/comments?'+uri).content.decode('utf-8'))
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response[Protocol.DATA][0]['likes'] == before_comment_like_count + 1
+        assert response[Protocol.DATA][0]['like_count'] == before_comment_like_count + 1
 
     def test_get_comment_like_after_post_comment_unlike(self):
         get_thread_comments_json = {
@@ -158,7 +158,7 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         uri = parse.urlencode(get_thread_comments_json)
         response = json.loads(c.get('/threads/1/comments?'+uri).content.decode('utf-8'))
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        before_comment_like_count = response[Protocol.DATA][0]['likes']
+        before_comment_like_count = response[Protocol.DATA][0]['like_count']
 
         post_comment_unlike_json = {
             'user': 1,
@@ -176,4 +176,4 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         uri = parse.urlencode(get_thread_comments_json)
         response = json.loads(c.get('/threads/1/comments?'+uri).content.decode('utf-8'))
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response[Protocol.DATA][0]['likes'] == before_comment_like_count - 1
+        assert response[Protocol.DATA][0]['like_count'] == before_comment_like_count - 1

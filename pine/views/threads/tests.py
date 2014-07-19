@@ -222,8 +222,8 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response[Protocol.DATA][0]['is_user_like'] is False
-        assert response[Protocol.DATA][0]['like'] == 7
+        assert response[Protocol.DATA][0]['liked'] is False
+        assert response[Protocol.DATA][0]['like_count'] == 7
 
         response = c.post(URL+'/8/like',
                           data=json.dumps(self.post_thread_like_json),
@@ -234,8 +234,8 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response[Protocol.DATA][0]['is_user_like'] is True
-        assert response[Protocol.DATA][0]['like'] == 8
+        assert response[Protocol.DATA][0]['liked'] is True
+        assert response[Protocol.DATA][0]['like_count'] == 8
 
     def test_get_post_like_count_after_post_thread_unlike(self):
         c = Client()
@@ -249,8 +249,8 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response[Protocol.DATA][0]['is_user_like'] is False
-        assert response[Protocol.DATA][0]['like'] == 7
+        assert response[Protocol.DATA][0]['liked'] is False
+        assert response[Protocol.DATA][0]['like_count'] == 7
 
         self.post_thread_unlike_json = {
             'user': 2
@@ -264,8 +264,8 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response[Protocol.DATA][0]['is_user_like'] is False
-        assert response[Protocol.DATA][0]['like'] == 6
+        assert response[Protocol.DATA][0]['liked'] is False
+        assert response[Protocol.DATA][0]['like_count'] == 6
 
     def test_get_thread_after_post_report_thread(self):
         c = Client()

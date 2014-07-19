@@ -37,7 +37,7 @@ response:
                                         2=thread author's comment,
                                         3=user & thread author's comment),
                 comment_user_id:    (Number, User's virtual id),
-                likes:              (Number, how many users like),
+                like_count:         (Number, how many users like),
                 pub_date:           (String, '%Y-%m-%d %H:%M:%S'),
                 content:            (String, content <= 200)
             }, ...
@@ -83,7 +83,7 @@ def get_comments(request, thread_id):
                 'comment_type': comment_type,
                 'comment_user_id': virtual_id[comment.author_id],
                 'pub_date': timezone.localtime(comment.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
-                'likes': len(likes),
+                'like_count': len(likes),
                 'is_user_like': user_id in likes,
                 'content': comment.content
             })
