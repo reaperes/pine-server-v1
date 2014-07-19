@@ -38,6 +38,7 @@ response:
                                         3=user & thread author's comment),
                 comment_user_id:    (Number, User's virtual id),
                 like_count:         (Number, how many users like),
+                liked:              (Boolean, if user liked or not),
                 pub_date:           (String, '%Y-%m-%d %H:%M:%S'),
                 content:            (String, content <= 200)
             }, ...
@@ -84,7 +85,7 @@ def get_comments(request, thread_id):
                 'comment_user_id': virtual_id[comment.author_id],
                 'pub_date': timezone.localtime(comment.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
                 'like_count': len(likes),
-                'is_user_like': user_id in likes,
+                'liked': user_id in likes,
                 'content': comment.content
             })
 

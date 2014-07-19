@@ -40,8 +40,8 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.DATA][1]['comment_user_id'] == 1
         assert response[Protocol.DATA][0]['like_count'] == 3
         assert response[Protocol.DATA][1]['like_count'] == 0
-        assert response[Protocol.DATA][0]['is_user_like'] is True
-        assert response[Protocol.DATA][1]['is_user_like'] is False
+        assert response[Protocol.DATA][0]['liked'] is True
+        assert response[Protocol.DATA][1]['liked'] is False
         assert response[Protocol.DATA][0]['comment_type'] == 3
         assert response[Protocol.DATA][1]['comment_type'] == 0
 
