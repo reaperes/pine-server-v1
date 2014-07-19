@@ -11,6 +11,10 @@ urlpatterns = patterns('',
     # url(r'^admin/', include(admin.site.urls)),
     url(r'^test.*', 'pine.test.views.pine_test'),
 
+    url(r'^timeline/friends$', 'pine.views.timeline.views.get_latest_friend_timeline'),
+    url(r'^timeline/friends/since_offset', 'pine.views.timeline.views.get_friend_timeline_since_offset'),
+    url(r'^timeline/friends/previous_offset', 'pine.views.timeline.views.get_friend_timeline_previous_offset'),
+
     url(r'^threads$', 'pine.views.threads.views.pine_thread'),
     url(r'^threads/(?P<thread_id>[0-9]+)$', 'pine.views.threads.views.get_thread'),
     url(r'^threads/(?P<thread_id>[0-9]+)/offset$', 'pine.views.threads.views.get_thread_offset'),
