@@ -1,10 +1,11 @@
 import json
+from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from pine.models import Threads, Users
+from pine.models import Threads
 from pine.pine import Protocol
 
 
@@ -40,7 +41,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def get_latest_friend_timeline(request):
     if request.method == 'POST':
         return HttpResponse(status=400)
@@ -52,7 +53,7 @@ def get_latest_friend_timeline(request):
     }
 
     try:
-        user_id = int(request.GET.get('user'))
+        user_id = request.session['user_id']
         count = int(request.GET.get('count'))
 
         threads = Threads.objects.filter(readers__id=user_id, is_public=False)[0:count]
@@ -82,7 +83,6 @@ def get_latest_friend_timeline(request):
 
 request:
 
-    user:           (Number, Users.id),
     offset_id:      (Number, thread id),
     count:          (Number, thread count. 0 < x <= 20)
 
@@ -111,7 +111,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required()
 def get_friend_timeline_since_offset(request):
     if request.method == 'POST':
         return HttpResponse(status=400)
@@ -123,7 +123,7 @@ def get_friend_timeline_since_offset(request):
     }
 
     try:
-        user_id = int(request.GET.get('user'))
+        user_id = request.session['user_id']
         count = int(request.GET.get('count'))
         offset_id = int(request.GET.get('offset_id'))
 
@@ -158,7 +158,6 @@ def get_friend_timeline_since_offset(request):
 
 request:
 
-    user:           (Number, Users.id),
     offset_id:      (Number, thread id),
     count:          (Number, thread count. 0 < x <= 20)
 
@@ -187,7 +186,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required()
 def get_friend_timeline_previous_offset(request):
     if request.method == 'POST':
         return HttpResponse(status=400)
@@ -199,7 +198,7 @@ def get_friend_timeline_previous_offset(request):
     }
 
     try:
-        user_id = int(request.GET.get('user'))
+        user_id = request.session['user_id']
         count = int(request.GET.get('count'))
         offset_id = int(request.GET.get('offset_id'))
 
@@ -227,12 +226,3 @@ def get_friend_timeline_previous_offset(request):
         response_data[Protocol.MESSAGE] = err
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
-
-
-
-
-
-
-
-
-

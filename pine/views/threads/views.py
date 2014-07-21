@@ -1,6 +1,7 @@
 import re
 import json
 import logging
+from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse
 from django.utils import timezone
@@ -22,7 +23,7 @@ class ErrorMessage:
     MALFORMED_PARAMETER = 'Some parameters are malformed'
 
 
-@csrf_exempt
+@login_required
 def pine_thread(request):
     if request.method == 'POST':
         return post_thread(request)
@@ -38,7 +39,6 @@ request 1/2:
     Content-Disposition: form-data; name='json'
     Content-Type: application/json;
     {
-        author:     (Number, Users.id),
         is_public:  (Boolean),
         content:    (String, content < 200)
     }
@@ -50,7 +50,6 @@ request 1/2:
 request 2/2:
     Content-Type: application/json;
     {
-        author:     (Number, Users.id),
         is_public:  (Boolean),
         content:    (String, content < 200)
     }
@@ -83,7 +82,7 @@ def post_thread(request):
             default_storage.save(settings.MEDIA_DIR + '/' + file_name, ContentFile(req_file.read()))
 
             # insert db
-            user = Users.objects.get(id=int(req_json['author']))
+            user = Users.objects.get(id=int(request.session['user_id']))
             thread = Threads.objects.create(author=user,
                                             is_public=bool(req_json['is_public']),
                                             pub_date=timezone.now(),
@@ -95,7 +94,7 @@ def post_thread(request):
             image_url = ''
 
             # insert db
-            user = Users.objects.get(id=int(req_json['author']))
+            user = Users.objects.get(id=int(request.session['user_id']))
             thread = Threads.objects.create(author=user,
                                             is_public=bool(req_json['is_public']),
                                             pub_date=timezone.now(),
@@ -157,6 +156,7 @@ response:
 """
 
 
+# IT WILL BE DEPRECATED on August
 def get_threads(request):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -165,7 +165,7 @@ def get_threads(request):
     }
 
     try:
-        user_id = int(request.GET.get('user'))
+        user_id = int(request.session['user_id'])
         is_friend = request.GET.get('is_friend')
         offset = int(request.GET.get('offset'))
         limit = int(request.GET.get('limit'))
@@ -204,11 +204,10 @@ def get_threads(request):
 """ get thread protocol
 
 request:
-    /threads/<thread_id>?user={id}
+    /threads/<thread_id>
 
     parameter
         thread_id:      (Number, Thread id)
-        user:           (Number, User.id)
 
 
 response:
@@ -242,7 +241,7 @@ def get_thread(request, thread_id):
 
     try:
         thread_id = int(thread_id)
-        user_id = int(request.GET.get('user'))
+        user_id = request.session['user_id']
 
         thread = Threads.objects.get(id=thread_id)
 
@@ -267,11 +266,10 @@ def get_thread(request, thread_id):
 """ get thread offset url protocol
 
 request:
-    /threads/<thread_id>/offset?user={id}&is_friend={boolean}
+    /threads/<thread_id>/offset?is_friend={boolean}
 
     parameter
         thread_id:      (Number, Thread id)
-        user:           (Number, User.id)
         is_friend:      (Boolean, friend feed or public feed
 
 
@@ -286,7 +284,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def get_thread_offset(request, thread_id):
     if request.method == 'POST':
         return HttpResponse(status=400)
@@ -298,7 +296,7 @@ def get_thread_offset(request, thread_id):
 
     try:
         thread_id = int(thread_id)
-        user_id = int(request.GET.get('user'))
+        user_id = request.session['user_id']
         is_friend = request.GET.get('is_friend')
 
         if is_friend == 'true' or is_friend == 'True':
@@ -324,11 +322,7 @@ def get_thread_offset(request, thread_id):
 
 """ post thread like json protocol
 
-request 1:
-    Content-Type: application/json;
-    {
-        user:       (Number) Users.id
-    }
+request:
 
 
 response:
@@ -341,15 +335,14 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def post_thread_like(request, thread_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: ''
     }
 
-    req_json = json.loads(request.body.decode('utf-8'))
-    user_id = int(req_json['user'])
+    user_id = request.session['user_id']
 
     # update db
     thread = Threads.objects.get(id=int(thread_id))
@@ -366,11 +359,7 @@ def post_thread_like(request, thread_id):
 
 """ post thread unlike json protocol
 
-request 1:
-    Content-Type: application/json;
-    {
-        user:       (Number) Users.id
-    }
+request:
 
 
 response:
@@ -383,7 +372,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def post_thread_unlike(request, thread_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -391,8 +380,7 @@ def post_thread_unlike(request, thread_id):
     }
 
     try:
-        req_json = json.loads(request.body.decode('utf-8'))
-        user_id = int(req_json['user'])
+        user_id = request.session['user_id']
         user = Users.objects.get(id=user_id)
 
         # update db
@@ -414,10 +402,6 @@ def post_thread_unlike(request, thread_id):
 """ post report thread json protocol
 
 request:
-    Content-Type: application/json;
-    {
-        user:       (Number) Users.id
-    }
 
 
 response:
@@ -430,7 +414,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def post_report_thread(request, thread_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -438,9 +422,7 @@ def post_report_thread(request, thread_id):
     }
 
     try:
-        req_json = json.loads(request.body.decode('utf-8'))
-
-        user_id = int(req_json['user'])
+        user_id = request.session['user_id']
         user = Users.objects.get(id=user_id)
 
         report_thread_id = int(thread_id)
@@ -460,10 +442,7 @@ def post_report_thread(request, thread_id):
 """ post block thread(user) protocol
 
 request:
-    Content-Type: application/json;
-    {
-        user:       (Number, Users.id)
-    }
+
 
 response:
     Content-Type: application/json;
@@ -475,7 +454,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def post_block_thread(request, thread_id):
     if request.method == 'GET':
         return HttpResponse(status=400)
@@ -486,11 +465,10 @@ def post_block_thread(request, thread_id):
     }
 
     try:
-        req_json = json.loads(request.body.decode('utf-8'))
         block_thread_id = int(thread_id)
         block_thread = Threads.objects.get(id=block_thread_id)
         block_user = block_thread.author
-        user_id = int(req_json['user'])
+        user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
 
         if block_thread.author in user.blocks.only('id'):

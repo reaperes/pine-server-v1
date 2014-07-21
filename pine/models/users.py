@@ -1,9 +1,11 @@
 from django.db import models
+from django.conf import settings
 
 from pine.models.phones import Phones
 
 
 class Users(models.Model):
+    account = models.OneToOneField(settings.AUTH_USER_MODEL)
     phone = models.OneToOneField(Phones)
     friend_phones = models.ManyToManyField(Phones, related_name='related_phone_user')
     friends = models.ManyToManyField('self', symmetrical=True)

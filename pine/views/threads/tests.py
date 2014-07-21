@@ -7,153 +7,125 @@ from django.test.client import Client
 from django.conf import settings
 
 from pine.pine import Protocol
-from pine.views.tests_support import LoadFixtures
+from pine.views.tests_support import LoadFixtures, process_session
 
 URL = '/threads'
 
 
 class UnitThreadTestCase(TestCase, LoadFixtures):
     def setUp(self):
+        self.client = Client()
         self.post_friend_thread_json = {
-            'author': 2,
             'is_public': False,
             'content': 'Hello, Test content'
         }
         self.post_public_thread_json = {
-            'author': 2,
             'is_public': True,
             'content': 'Hello, Test content'
         }
 
-        self.get_thread = {
-            'user': 2
-        }
-
         self.get_friend_thread_offset = {
-            'user': 2,
             'is_friend': True
         }
 
         self.get_public_thread_offset = {
-            'user': 2,
             'is_friend': False
         }
 
         self.get_friend_threads_json = {
-            'user': 2,
             'is_friend': True,
             'offset': 0,
             'limit': 1
         }
         self.get_public_threads_json = {
-            'user': 2,
             'is_friend': False,
             'offset': 0,
             'limit': 1
         }
         self.image_path = settings.BASE_DIR + '/resources/png_sample.png'
 
-        self.post_thread_like_json = {
-            'user': 1
-        }
-
-        self.post_thread_unlike_json = {
-            'user': 2
-        }
-
-        self.post_report_thread_json = {
-            'user': 2
-        }
-
-        self.post_block_thread_json = {
-            'user': 2
-        }
-
     def test_post_friends_thread_with_image(self):
-        c = Client()
+        process_session(self.client, user_id=2)
         response = None
         with open(settings.BASE_DIR + '/resources/jpeg_sample.jpeg', 'rb') as fp:
             j = {
                 'json': json.dumps(self.post_friend_thread_json),
                 'bg_image_file': fp
             }
-            response = c.post(URL, j).content.decode('utf-8')
+            response = self.client.post(URL, j).content.decode('utf-8')
             response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
     def test_post_friends_thread_no_image(self):
-        c = Client()
-        response = c.post(URL,
-                          data=json.dumps(self.post_friend_thread_json),
-                          content_type='application/json').content.decode('utf-8')
+        process_session(self.client, user_id=2)
+        response = self.client.post(URL,
+                                    data=json.dumps(self.post_friend_thread_json),
+                                    content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
     def test_get_thread(self):
-        c = Client()
-        uri = parse.urlencode(self.get_thread)
-        response = c.get(URL+'/1?'+uri, content_type='application/json').content.decode('utf-8')
+        process_session(self.client, user_id=2)
+        response = self.client.get(URL+'/1', content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA]['id'] == 1
 
     def test_get_friend_thread_offset(self):
-        c = Client()
+        process_session(self.client, user_id=2)
         uri = parse.urlencode(self.get_friend_thread_offset)
-        response = c.get(URL+'/1/offset?'+uri, content_type='application/json').content.decode('utf-8')
+        response = self.client.get(URL+'/1/offset?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response['offset'] == 1
 
     def test_get_public_thread_offset(self):
-        c = Client()
+        process_session(self.client, user_id=2)
         uri = parse.urlencode(self.get_public_thread_offset)
-        response = c.get(URL+'/2/offset?'+uri, content_type='application/json').content.decode('utf-8')
+        response = self.client.get(URL+'/2/offset?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response['offset'] == 3
 
     def test_get_friends_thread(self):
-        c = Client()
+        process_session(self.client, user_id=2)
         uri = parse.urlencode(self.get_friend_threads_json)
-        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = self.client.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
     def test_post_thread_like(self):
-        c = Client()
-        response = c.post(URL+'/8/like',
-                          data=json.dumps(self.post_thread_like_json),
-                          content_type='application/json').content.decode('utf-8')
+        process_session(self.client, user_id=1)
+        response = self.client.post(URL+'/8/like',
+                                    content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
     def test_post_thread_unlike(self):
-        c = Client()
-        response = c.post(URL+'/2/unlike',
-                          data=json.dumps(self.post_thread_unlike_json),
-                          content_type='application/json').content.decode('utf-8')
+        process_session(self.client, user_id=2)
+        response = self.client.post(URL+'/2/unlike',
+                                    content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
     def test_post_report_thread(self):
-        c = Client()
-        response = c.post(URL+'/7/report', data=json.dumps(self.post_report_thread_json),
-                          content_type='application/json').content.decode('utf-8')
+        process_session(self.client, user_id=2)
+        response = self.client.post(URL+'/7/report',
+                                    content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
     def test_block_thread(self):
-        c = Client()
-        response = c.post(URL+'/5/block', data=json.dumps(self.post_block_thread_json),
-                          content_type='application/json').content.decode('utf-8')
+        process_session(self.client, user_id=1)
+        response = self.client.post(URL+'/5/block',
+                                    content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.RESULT] == Protocol.SUCCESS, response[Protocol.MESSAGE]
 
     def test_get_thread_comment(self):
-        c = Client()
+        process_session(self.client, user_id=2)
         uri = parse.urlencode(self.get_friend_threads_json)
-        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = self.client.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA][0]['comment'] == 1
@@ -161,13 +133,12 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
 
 class IntegrationThreadTestCase(TestCase, LoadFixtures):
     def setUp(self):
+        self.client = Client()
         self.post_friend_thread_json = {
-            'author': 1,
             'is_public': False,
             'content': 'post_friend_thread_json'
         }
         self.get_friend_threads_json = {
-            'user': 2,
             'is_friend': True,
             'offset': 0,
             'limit': 1
@@ -177,167 +148,93 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         }
 
     def test_get_valid_content_after_post_friend_thread(self):
-        c = Client()
+        process_session(self.client, user_id=1)
         response = None
         with open(settings.BASE_DIR + '/resources/png_sample.png', 'rb') as fp:
             j = {
                 'json': json.dumps(self.post_friend_thread_json),
                 'bg_image_file': fp
             }
-            response = c.post(URL, j).content.decode('utf-8')
+            response = self.client.post(URL, j).content.decode('utf-8')
             response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
         uri = parse.urlencode(self.get_friend_threads_json)
-        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = self.client.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA][0]['content'] == 'post_friend_thread_json'
         assert re.search(r'.*png_sample\.png.*', response[Protocol.DATA][0]['image_url'])
 
     def test_get_valid_content_after_post_friend_thread_no_image(self):
-        c = Client()
-        response = c.post(URL,
-                          data=json.dumps(self.post_friend_thread_json),
-                          content_type='application/json').content.decode('utf-8')
+        process_session(self.client, user_id=1)
+        response = self.client.post(URL,
+                                    data=json.dumps(self.post_friend_thread_json),
+                                    content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
         uri = parse.urlencode(self.get_friend_threads_json)
-        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = self.client.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA][0]['content'] == 'post_friend_thread_json'
         assert response[Protocol.DATA][0]['image_url'] == ''
 
     def test_get_post_like_count_after_post_thread_like(self):
-        c = Client()
+        process_session(self.client, user_id=1)
         get_threads_json = {
-            'user': 1,
             'is_friend': True,
             'offset': 0,
             'limit': 1
         }
         uri = parse.urlencode(get_threads_json)
-        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = self.client.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA][0]['liked'] is False
         assert response[Protocol.DATA][0]['like_count'] == 7
 
-        response = c.post(URL+'/8/like',
-                          data=json.dumps(self.post_thread_like_json),
-                          content_type='application/json').content.decode('utf-8')
+        response = self.client.post(URL+'/8/like',
+                                    data=json.dumps(self.post_thread_like_json),
+                                    content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
-        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = self.client.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA][0]['liked'] is True
         assert response[Protocol.DATA][0]['like_count'] == 8
 
-    def test_get_post_like_count_after_post_thread_unlike(self):
-        c = Client()
-        get_threads_json = {
-            'user': 1,
-            'is_friend': True,
-            'offset': 0,
-            'limit': 1
-        }
-        uri = parse.urlencode(get_threads_json)
-        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
-        response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response[Protocol.DATA][0]['liked'] is False
-        assert response[Protocol.DATA][0]['like_count'] == 7
-
-        self.post_thread_unlike_json = {
-            'user': 2
-        }
-        response = c.post(URL+'/8/unlike',
-                          data=json.dumps(self.post_thread_unlike_json),
-                          content_type='application/json').content.decode('utf-8')
-        response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-
-        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
-        response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response[Protocol.DATA][0]['liked'] is False
-        assert response[Protocol.DATA][0]['like_count'] == 6
-
     def test_get_thread_after_post_report_thread(self):
-        c = Client()
+        process_session(self.client, user_id=2)
         get_threads_json = {
-            'user': 2,
             'is_friend': True,
             'offset': 0,
             'limit': 1
         }
         uri = parse.urlencode(get_threads_json)
-        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = self.client.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         report_thread_id = response[Protocol.DATA][0]['id']
 
-        self.post_report_thread_json = {
-            'user': 2
-        }
-        response = c.post(URL+'/8/report', data=json.dumps(self.post_report_thread_json),
-                          content_type='application/json').content.decode('utf-8')
+        process_session(self.client, user_id=2)
+        response = self.client.post(URL+'/8/report',
+                                    content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
-        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = self.client.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA][0]['id'] != report_thread_id
-
-    def test_get_no_content_from_user2_after_user2_blocked(self):
-        get_friend_threads_json = {
-            'user': 2,
-            'is_friend': True,
-            'offset': 0,
-            'limit': 1
-        }
-        post_block_user_json = {
-            'user': 2
-        }
-        post_friend_thread_json = {
-            'author': 1,
-            'is_public': False,
-            'content': 'post_friend_thread_json2'
-        }
-
-        c = Client()
-        uri = parse.urlencode(get_friend_threads_json)
-        response = c.get('/threads?' + uri, content_type='application/json').content.decode('utf-8')
-        response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-
-        before_content = response[Protocol.DATA][0]['content']
-        response = c.post(URL+'/1/block', data=json.dumps(post_block_user_json),
-                          content_type='application/json').content.decode('utf-8')
-        response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-
-        response = c.post('/threads', data=json.dumps(post_friend_thread_json),
-                          content_type='application/json').content.decode('utf-8')
-        response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-
-        response = c.get('/threads?' + uri, content_type='application/json').content.decode('utf-8')
-        response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert not response[Protocol.DATA][0]['content'] == 'post_friend_thread_json2'
-        assert before_content == response[Protocol.DATA][0]['content']
 
 
 class ReportedBugTestCase(TestCase, LoadFixtures):
     def setUp(self):
         self.get_friend_threads_json = {
-            'user': 2,
             'is_friend': True,
             'offset': 1,
             'limit': 1
@@ -345,9 +242,9 @@ class ReportedBugTestCase(TestCase, LoadFixtures):
 
     # offset = 10, limit = 10 get no return data. (fixed)
     def test_get_threads(self):
-        c = Client()
+        process_session(self.client, user_id=2)
         uri = parse.urlencode(self.get_friend_threads_json)
-        response = c.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
+        response = self.client.get(URL+'?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert len(response[Protocol.DATA]) != 0

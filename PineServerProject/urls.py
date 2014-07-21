@@ -11,6 +11,10 @@ urlpatterns = patterns('',
     # url(r'^admin/', include(admin.site.urls)),
     url(r'^test.*', 'pine.test.views.pine_test'),
 
+    url(r'^users/login', 'pine.views.users.views.post_login'),
+    # url(r'^users/register', 'pine.views.users.views.post_register'),
+    # url(r'^users/delete', 'pine.views.users.views.post_delete'),
+
     url(r'^timeline/friends$', 'pine.views.timeline.views.get_latest_friend_timeline'),
     url(r'^timeline/friends/since_offset', 'pine.views.timeline.views.get_friend_timeline_since_offset'),
     url(r'^timeline/friends/previous_offset', 'pine.views.timeline.views.get_friend_timeline_previous_offset'),

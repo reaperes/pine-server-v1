@@ -1,14 +1,14 @@
 import json
+from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 
 from pine.models import Threads, Users, Comments
 from pine.pine import Protocol
 
 
-@csrf_exempt
+@login_required
 def post_and_get_comments(request, thread_id):
     if request.method == 'POST':
         return post_comment(request, thread_id)
@@ -18,9 +18,8 @@ def post_and_get_comments(request, thread_id):
 
 """ get comments json protocol
 
-request uri:
+request:
 
-        user:       (Number) Users.id
 
 response:
     Content-Type: application/json;
@@ -56,7 +55,7 @@ def get_comments(request, thread_id):
     }
 
     try:
-        user_id = int(request.GET.get('user'))
+        user_id = int(request.session['user_id'])
         thread_id = int(thread_id)
         thread = Threads.objects.get(id=thread_id)
 
@@ -102,7 +101,6 @@ def get_comments(request, thread_id):
 request json:
     Content-Type: application/json;
     {
-        user:       (Number, Users.id),
         content:    (String, 0 < content <= 200)
     }
 
@@ -126,7 +124,7 @@ def post_comment(request, thread_id):
         thread_id = int(thread_id)
         thread = Threads.objects.get(id=thread_id)
         req_json = json.loads(request.body.decode('utf-8'))
-        user_id = req_json['user']
+        user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
         content = req_json['content']
 
@@ -146,10 +144,7 @@ def post_comment(request, thread_id):
 """ post comment like json protocol
 
 request:
-    Content-Type: application/json;
-    {
-        user:       (Number, Users.id)
-    }
+
 
 response:
     Content-Type: application/json;
@@ -161,7 +156,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def post_comment_like(request, comment_id):
     if request.method == 'GET':
         return HttpResponse(status=400)
@@ -172,11 +167,8 @@ def post_comment_like(request, comment_id):
     }
 
     try:
+        user_id = int(request.session['user_id'])
         comment_id = int(comment_id)
-
-        req_json = json.loads(request.body.decode('utf-8'))
-        user_id = int(req_json['user'])
-
         comment = Comments.objects.get(id=comment_id)
         comment_likes = [user.id for user in comment.likes.only('id')]
         if user_id in comment_likes:
@@ -195,10 +187,7 @@ def post_comment_like(request, comment_id):
 """ post comment unlike json protocol
 
 request:
-    Content-Type: application/json;
-    {
-        user:       (Number, Users.id)
-    }
+
 
 response:
     Content-Type: application/json;
@@ -210,7 +199,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def post_comment_unlike(request, comment_id):
     if request.method == 'GET':
         return HttpResponse(status=400)
@@ -221,11 +210,8 @@ def post_comment_unlike(request, comment_id):
     }
 
     try:
+        user_id = int(request.session['user_id'])
         comment_id = int(comment_id)
-
-        req_json = json.loads(request.body.decode('utf-8'))
-        user_id = int(req_json['user'])
-
         comment = Comments.objects.get(id=comment_id)
         comment_likes = [user.id for user in comment.likes.only('id')]
         if user_id not in comment_likes:
@@ -244,10 +230,7 @@ def post_comment_unlike(request, comment_id):
 """ post comment report json protocol
 
 request:
-    Content-Type: application/json;
-    {
-        user:       (Number, Users.id)
-    }
+
 
 response:
     Content-Type: application/json;
@@ -259,7 +242,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def post_comment_report(request, comment_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -267,9 +250,7 @@ def post_comment_report(request, comment_id):
     }
 
     try:
-        req_json = json.loads(request.body.decode('utf-8'))
-
-        user_id = int(req_json['user'])
+        user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
 
         report_comment_id = int(comment_id)
@@ -288,10 +269,7 @@ def post_comment_report(request, comment_id):
 """ post comment block json protocol
 
 request:
-    Content-Type: application/json;
-    {
-        user:       (Number, Users.id)
-    }
+
 
 response:
     Content-Type: application/json;
@@ -303,7 +281,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def post_comment_block(request, comment_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -312,9 +290,7 @@ def post_comment_block(request, comment_id):
 
     try:
         comment_id = int(comment_id)
-        req_json = json.loads(request.body.decode('utf-8'))
-
-        user_id = int(req_json['user'])
+        user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
 
         block_comment = Comments.objects.get(id=comment_id)

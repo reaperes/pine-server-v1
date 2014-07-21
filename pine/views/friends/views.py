@@ -1,7 +1,7 @@
 import json
+from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 
 from pine.models import Users, Phones
 from pine.pine import Protocol
@@ -10,10 +10,6 @@ from pine.pine import Protocol
 """ get friends json protocol
 
 request:
-    Content-Type: application/json;
-    {
-        user:       (Number) Users.id
-    }
 
 
 response:
@@ -33,7 +29,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def get_friends_list(request):
     if request.method == 'POST':
         return HttpResponse(status=400)
@@ -44,7 +40,7 @@ def get_friends_list(request):
     }
 
     try:
-        user_id = int(request.GET.get('user'))
+        user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
         phones = [phone.phone_number for phone in user.friend_phones.all()]
         response_data[Protocol.DATA] = phones
@@ -61,7 +57,6 @@ def get_friends_list(request):
 request:
     Content-Type: application/json;
     {
-        user:           (Number, Users.id),
         phone_numbers:  (Array, Friend's phone numbers)
         ["01012345678", ... ]
     }
@@ -77,7 +72,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def post_friends_create(request):
     if request.method == 'GET':
         return HttpResponse(status=400)
@@ -89,7 +84,7 @@ def post_friends_create(request):
 
     try:
         req_json = json.loads(request.body.decode('utf-8'))
-        user_id = req_json['user']
+        user_id = int(request.session['user_id'])
 
         phone_numbers = req_json['phone_numbers']
 
@@ -130,7 +125,6 @@ def post_friends_create(request):
 request:
     Content-Type: application/json;
     {
-        user:           (Number, Users.id),
         phone_numbers:  (Array, Friend's phone numbers)
         ["01012345678", ... ]
     }
@@ -146,7 +140,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def post_friends_destroy(request):
     if request.method == 'GET':
         return HttpResponse(status=400)
@@ -158,7 +152,7 @@ def post_friends_destroy(request):
 
     try:
         req_json = json.loads(request.body.decode('utf-8'))
-        user_id = req_json['user']
+        user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
 
         phone_numbers = req_json['phone_numbers']
@@ -192,10 +186,6 @@ def post_friends_destroy(request):
 """ GET handshake friend count
 
 request:
-    Content-Type: application/json;
-    {
-        user:           (Number, Users.id),
-    }
 
 
 response:
@@ -209,7 +199,7 @@ response:
 """
 
 
-@csrf_exempt
+@login_required
 def get_friends_handshake_count(request):
     if request.method == 'POST':
         return HttpResponse(status=400)
@@ -220,7 +210,7 @@ def get_friends_handshake_count(request):
     }
 
     try:
-        user_id = int(request.GET.get('user'))
+        user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
         response_data['count'] = user.friends.only('id').count()
         response_data[Protocol.RESULT] = Protocol.SUCCESS
