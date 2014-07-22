@@ -3,12 +3,14 @@ from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse
 from django.utils import timezone
+from django.views.decorators.http import require_http_methods, require_POST
 
 from pine.models import Threads, Users, Comments
 from pine.pine import Protocol
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def post_and_get_comments(request, thread_id):
     if request.method == 'POST':
         return post_comment(request, thread_id)
@@ -157,10 +159,8 @@ response:
 
 
 @login_required
+@require_POST
 def post_comment_like(request, comment_id):
-    if request.method == 'GET':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: '',
@@ -200,10 +200,8 @@ response:
 
 
 @login_required
+@require_POST
 def post_comment_unlike(request, comment_id):
-    if request.method == 'GET':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: '',
@@ -243,6 +241,7 @@ response:
 
 
 @login_required
+@require_POST
 def post_comment_report(request, comment_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -282,6 +281,7 @@ response:
 
 
 @login_required
+@require_POST
 def post_comment_block(request, comment_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,

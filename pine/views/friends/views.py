@@ -2,6 +2,7 @@ import json
 from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse
+from django.views.decorators.http import require_POST, require_GET
 
 from pine.models import Users, Phones
 from pine.pine import Protocol
@@ -30,10 +31,8 @@ response:
 
 
 @login_required
+@require_GET
 def get_friends_list(request):
-    if request.method == 'POST':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: ''
@@ -73,10 +72,8 @@ response:
 
 
 @login_required
+@require_POST
 def post_friends_create(request):
-    if request.method == 'GET':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: ''
@@ -141,10 +138,8 @@ response:
 
 
 @login_required
+@require_POST
 def post_friends_destroy(request):
-    if request.method == 'GET':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: ''
@@ -200,10 +195,8 @@ response:
 
 
 @login_required
+@require_GET
 def get_friends_handshake_count(request):
-    if request.method == 'POST':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: ''

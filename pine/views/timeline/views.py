@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 
 from pine.models import Threads
 from pine.pine import Protocol
@@ -42,10 +43,8 @@ response:
 
 
 @login_required
+@require_GET
 def get_latest_friend_timeline(request):
-    if request.method == 'POST':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: '',
@@ -111,11 +110,9 @@ response:
 """
 
 
-@login_required()
+@login_required
+@require_GET
 def get_friend_timeline_since_offset(request):
-    if request.method == 'POST':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: '',
@@ -186,11 +183,9 @@ response:
 """
 
 
-@login_required()
+@login_required
+@require_GET
 def get_friend_timeline_previous_offset(request):
-    if request.method == 'POST':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: '',

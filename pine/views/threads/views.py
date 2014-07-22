@@ -5,25 +5,18 @@ from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
 
 from pine.models import Threads, Users
 from pine.pine import Protocol
 from pine.util import fileutil
 
 
-logger = logging.getLogger(__name__)
-
-
-class ErrorMessage:
-    MALFORMED_JSON_REQUEST = 'Malformed request'
-    MALFORMED_PARAMETER = 'Some parameters are malformed'
-
-
 @login_required
+@require_http_methods(["GET", "POST"])
 def pine_thread(request):
     if request.method == 'POST':
         return post_thread(request)
@@ -109,12 +102,8 @@ def post_thread(request):
             Protocol.MESSAGE: ''
         }
 
-    # if malformed json
-    except ValueError:
-        response_data[Protocol.MESSAGE] = ErrorMessage.MALFORMED_JSON_REQUEST
-
     # if malformed protocol
-    except AssertionError as err:
+    except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
@@ -190,12 +179,8 @@ def get_threads(request):
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
-    # if malformed json
-    except ValueError:
-        response_data[Protocol.MESSAGE] = ErrorMessage.MALFORMED_JSON_REQUEST
-
     # if malformed protocol
-    except AssertionError as err:
+    except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
@@ -285,6 +270,7 @@ response:
 
 
 @login_required
+@require_GET
 def get_thread_offset(request, thread_id):
     if request.method == 'POST':
         return HttpResponse(status=400)
@@ -336,6 +322,7 @@ response:
 
 
 @login_required
+@require_POST
 def post_thread_like(request, thread_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -373,6 +360,7 @@ response:
 
 
 @login_required
+@require_POST
 def post_thread_unlike(request, thread_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -415,6 +403,7 @@ response:
 
 
 @login_required
+@require_POST
 def post_report_thread(request, thread_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -455,10 +444,8 @@ response:
 
 
 @login_required
+@require_POST
 def post_block_thread(request, thread_id):
-    if request.method == 'GET':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: ''

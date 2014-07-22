@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import auth
 from django.contrib.auth.models import User
+from django.views.decorators.http import require_POST
 
 from pine.pine import Protocol
 from pine.models import Users, Phones
@@ -30,10 +31,8 @@ response:
 
 
 @csrf_exempt
+@require_POST
 def post_login(request):
-    if request.method == 'GET':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: ''
@@ -61,6 +60,7 @@ def post_login(request):
 
 
 @csrf_exempt
+@require_POST
 def post_register(request):
     user = User.objects.create_user(username='namhoon', email='namhoon@pine.com', password='helloworld')
     user.save()
@@ -68,6 +68,7 @@ def post_register(request):
 
 
 @csrf_exempt
+@require_POST
 def post_delete(request):
     user = User.objects.get(username='namhoon')
     user.delete()
