@@ -46,3 +46,27 @@ class UnitTestCase(TestCase, LoadFixtures):
                           content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.FAIL
+
+    def test_register_user(self):
+        protocol = {
+            'username': '123123',
+            'password': '123123'
+        }
+        c = Client()
+        response = c.post('/users/register',
+                          data=json.dumps(protocol),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+    def test_register_invalid_user(self):
+        protocol = {
+            'username': '01032080403',
+            'password': '01032080403'
+        }
+        c = Client()
+        response = c.post('/users/register',
+                          data=json.dumps(protocol),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.FAIL

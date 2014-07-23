@@ -59,17 +59,51 @@ def post_login(request):
     return HttpResponse(json.dumps(response_data), content_type='application/json')
 
 
+""" post register
+
+request:
+    Content-Type: application/json;
+    {
+        username:       (String),
+        password:       (String)
+    }
+
+response:
+    Content-Type: application/json;
+    {
+        result:     (String, SUCCESS or FAIL),
+        message:    (String, error message)
+    }
+
+"""
+
+
 @csrf_exempt
 @require_POST
 def post_register(request):
-    user = User.objects.create_user(username='namhoon', email='namhoon@pine.com', password='helloworld')
-    user.save()
-    return HttpResponse(status=200)
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: ''
+    }
 
+    try:
+        req_json = json.loads(request.body.decode('utf-8'))
+        username = req_json['username']
+        password = req_json['password']
 
-@csrf_exempt
-@require_POST
-def post_delete(request):
-    user = User.objects.get(username='namhoon')
-    user.delete()
-    return HttpResponse(status=200)
+        # check username is duplicated
+        if User.objects.filter(username=username).count():
+            raise Exception('ERROR: Duplicated username.')
+
+        account = User.objects.create_user(username=username, password=password)
+        phone = Phones.objects.filter(phone_number=username)
+        if phone.exists() is False:
+            phone = Phones.objects.create(phone_number=username)
+
+        Users.objects.create(account=account, phone=phone)
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')

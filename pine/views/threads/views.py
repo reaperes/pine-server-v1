@@ -1,6 +1,5 @@
 import re
 import json
-import logging
 from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse
@@ -216,9 +215,6 @@ response:
 
 
 def get_thread(request, thread_id):
-    if request.method == 'POST':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: '',
@@ -272,9 +268,6 @@ response:
 @login_required
 @require_GET
 def get_thread_offset(request, thread_id):
-    if request.method == 'POST':
-        return HttpResponse(status=400)
-
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: '',
