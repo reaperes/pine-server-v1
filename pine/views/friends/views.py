@@ -46,7 +46,7 @@ def get_friends_list(request):
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
-        response_data[Protocol.MESSAGE] = err
+        response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
 
@@ -160,8 +160,10 @@ def post_friends_destroy(request):
 
                 target_query = Users.objects.filter(phone=target_phone)
                 if not target_query.exists():
-                    continue
+                    on
+
                 target = Users.objects.get(phone=target_phone)
+
 
                 if user.friends.filter(id=target.id).exists():
                     user.friends.remove(target)

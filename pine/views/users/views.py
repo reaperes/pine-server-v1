@@ -49,6 +49,7 @@ def post_login(request):
             phone = Phones.objects.get(phone_number=username)
             user_id = Users.objects.get(phone=phone)
             request.session['user_id'] = str(user_id)
+            auth.login(request, account)
             response_data[Protocol.RESULT] = Protocol.SUCCESS
         else:
             response_data[Protocol.MESSAGE] = 'Username or password does not match.'
