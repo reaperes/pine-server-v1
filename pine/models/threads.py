@@ -11,7 +11,7 @@ class Threads(models.Model):
     reports = models.ManyToManyField(Users, related_name='reportThreads')
     pub_date = models.DateTimeField()
     image_url = models.CharField(max_length=256, default='')
-    content = models.CharField(max_length=200)
+    content = models.CharField(max_length=1000)
 
     class Meta:
         app_label = 'pine'
