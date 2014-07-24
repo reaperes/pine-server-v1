@@ -77,3 +77,28 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = self.client.get('/friends/handshake_count', content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+
+class IntegrationTestCase(TestCase, LoadFixtures):
+    def setUp(self):
+        self.client = Client()
+
+    def test_destroy_friend_after_add_no_pine_friend(self):
+        # create friendship with no pine user
+        process_session(self.client, user_id=3)
+        response = self.client.post('/friends/create',
+                                    data=json.dumps({
+                                        'phone_numbers': ['01088888788']
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # destroy friendship
+        response = self.client.post('/friends/destroy',
+                                    data=json.dumps({
+                                        'phone_numbers': ['01088888788']
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
