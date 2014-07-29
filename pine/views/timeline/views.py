@@ -15,7 +15,7 @@ from pine.pine import Protocol
 request:
 
     user:           (Number, Users.id),
-    count:          (Number, thread count. 0 < x <= 20)
+    count:          (Number, thread count. 0 < x <= 100)
 
 response:
     Content-Type: application/json;
@@ -83,7 +83,7 @@ def get_latest_friend_timeline(request):
 request:
 
     offset_id:      (Number, thread id),
-    count:          (Number, thread count. 0 < x <= 20)
+    count:          (Number, thread count. 0 < x <= 100)
 
 response:
     Content-Type: application/json;
@@ -156,7 +156,7 @@ def get_friend_timeline_since_offset(request):
 request:
 
     offset_id:      (Number, thread id),
-    count:          (Number, thread count. 0 < x <= 20)
+    count:          (Number, thread count. 0 < x <= 100)
 
 response:
     Content-Type: application/json;
