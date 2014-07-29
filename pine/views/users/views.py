@@ -47,7 +47,7 @@ def post_login(request):
         if account is not None and account.is_active:
             auth.login(request, account)
             phone = Phones.objects.get(phone_number=username)
-            user_id = Users.objects.get(phone=phone)
+            user_id = Users.objects.get(phone=phone).pk
             request.session['user_id'] = str(user_id)
             auth.login(request, account)
             response_data[Protocol.RESULT] = Protocol.SUCCESS
