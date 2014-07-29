@@ -160,10 +160,9 @@ def post_friends_destroy(request):
 
                 target_query = Users.objects.filter(phone=target_phone)
                 if not target_query.exists():
-                    on
+                    continue
 
                 target = Users.objects.get(phone=target_phone)
-
 
                 if user.friends.filter(id=target.id).exists():
                     user.friends.remove(target)
