@@ -10,7 +10,7 @@ class Comments(models.Model):
     likes = models.ManyToManyField(Users, related_name='likeComments')
     reports = models.ManyToManyField(Users, related_name='reportComments')
     pub_date = models.DateTimeField()
-    content = models.CharField(max_length=200)
+    content = models.CharField(max_length=500)
 
     class Meta:
         app_label = 'pine'
