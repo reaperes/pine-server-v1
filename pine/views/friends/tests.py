@@ -102,3 +102,26 @@ class IntegrationTestCase(TestCase, LoadFixtures):
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+
+class ReportedBugTestCase(TestCase, LoadFixtures):
+        def setUp(self):
+            self.client = Client()
+
+        def user_3_add_x2_friendship_is_crashed(self):
+            process_session(self.client, user_id=3)
+            response = self.client.post('/friends/create',
+                                        data=json.dumps({
+                                            'phone_numbers': ['01087877711', '01099991111', '01087871111']
+                                        }),
+                                        content_type='application/json').content.decode('utf-8')
+            response = json.loads(response)
+            assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+            response = self.client.post('/friends/create',
+                                        data=json.dumps({
+                                            'phone_numbers': ['01087877711', '01099991111', '01087871111']
+                                        }),
+                                        content_type='application/json').content.decode('utf-8')
+            response = json.loads(response)
+            assert response[Protocol.RESULT] == Protocol.SUCCESS
