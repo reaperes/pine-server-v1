@@ -70,7 +70,7 @@ response:
 
 """
 
-
+# todo : need to more human readable
 @login_required
 @require_POST
 def post_friends_create(request):
@@ -91,6 +91,12 @@ def post_friends_create(request):
             target_phone_id = Phones.objects.filter(phone_number=target_phone_number)
             if target_phone_id.exists():
                 target_phone = target_phone_id[0]
+
+                if not Users.objects.filter(phone=target_phone).exists():
+                    friend_phone = Phones.objects.create(phone_number=target_phone_number)
+                    user.friend_phones.add(friend_phone)
+                    continue
+
                 target = Users.objects.get(phone=target_phone)
                 target_friend_phone_ids = [phone.id for phone in target.friend_phones.only('id')]
                 user.friend_phones.add(target_phone)
