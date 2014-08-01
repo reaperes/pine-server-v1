@@ -18,7 +18,7 @@ urlpatterns = patterns('',
     url(r'^timeline/friends/since_offset', 'pine.views.timeline.views.get_friend_timeline_since_offset'),
     url(r'^timeline/friends/previous_offset', 'pine.views.timeline.views.get_friend_timeline_previous_offset'),
 
-    url(r'^threads$', 'pine.views.threads.views.pine_thread'),
+    url(r'^threads$', 'pine.views.threads.views.post_thread'),
     url(r'^threads/(?P<thread_id>[0-9]+)$', 'pine.views.threads.views.get_thread'),
     url(r'^threads/(?P<thread_id>[0-9]+)/offset$', 'pine.views.threads.views.get_thread_offset'),
     url(r'^threads/(?P<thread_id>[0-9]+)/like', 'pine.views.threads.views.post_thread_like'),

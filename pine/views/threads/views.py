@@ -14,15 +14,6 @@ from pine.pine import Protocol
 from pine.util import fileutil
 
 
-@login_required
-@require_http_methods(["GET", "POST"])
-def pine_thread(request):
-    if request.method == 'POST':
-        return post_thread(request)
-    elif request.method == 'GET':
-        return get_threads(request)
-
-
 """ post thread json protocol
 
 request 1/2:
@@ -56,7 +47,8 @@ response:
 
 """
 
-
+@login_required
+@require_http_methods("POST")
 def post_thread(request):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
