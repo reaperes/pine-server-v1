@@ -88,40 +88,115 @@ class IntegrationTestCase(TestCase, LoadFixtures):
         process_session(self.client, user_id=3)
         response = self.client.post('/friends/create',
                                     data=json.dumps({
-                                        'phone_numbers': ['01088888788']
+                                        'phone_numbers': ["01087877711", "01099991111", "01087871111", "01098514123"]
                                     }),
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # get friends list count
+        response = self.client.get('/friends/list', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        before_friends_count = len(response[Protocol.DATA])
 
         # destroy friendship
         response = self.client.post('/friends/destroy',
                                     data=json.dumps({
-                                        'phone_numbers': ['01088888788']
+                                        'phone_numbers': ["01087877711", "01099991111", "01087871111", "01098514123"]
                                     }),
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
+        # get friends list count after destroy friendship
+        response = self.client.get('/friends/list', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert before_friends_count == len(response[Protocol.DATA]) + 4
+
 
 class ReportedBugTestCase(TestCase, LoadFixtures):
-        def setUp(self):
-            self.client = Client()
+    def setUp(self):
+        self.client = Client()
 
-        def user_3_add_x2_friendship_is_crashed(self):
-            process_session(self.client, user_id=3)
-            response = self.client.post('/friends/create',
-                                        data=json.dumps({
-                                            'phone_numbers': ['01087877711', '01099991111', '01087871111']
-                                        }),
-                                        content_type='application/json').content.decode('utf-8')
-            response = json.loads(response)
-            assert response[Protocol.RESULT] == Protocol.SUCCESS
+    def user_3_add_x2_friendship_is_crashed(self):
+        process_session(self.client, user_id=3)
+        response = self.client.post('/friends/create',
+                                    data=json.dumps({
+                                        'phone_numbers': ['01087877711', '01099991111', '01087871111']
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
 
-            response = self.client.post('/friends/create',
-                                        data=json.dumps({
-                                            'phone_numbers': ['01087877711', '01099991111', '01087871111']
-                                        }),
-                                        content_type='application/json').content.decode('utf-8')
-            response = json.loads(response)
-            assert response[Protocol.RESULT] == Protocol.SUCCESS
+        response = self.client.post('/friends/create',
+                                    data=json.dumps({
+                                        'phone_numbers': ['01087877711', '01099991111', '01087871111']
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+    def test_destroy_all_friend_after_add_no_pine_friend_and_pine_friend_x2(self):
+        # create friendship with pine, no pine user
+        process_session(self.client, user_id=3)
+        response = self.client.post('/friends/create',
+                                    data=json.dumps({
+                                        'phone_numbers': ["01032080403", "01099991111"]
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # get friends list count
+        response = self.client.get('/friends/list', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        before_friends_count = len(response[Protocol.DATA])
+
+        # destroy friendship
+        response = self.client.post('/friends/destroy',
+                                    data=json.dumps({
+                                        'phone_numbers': ["01032080403", "01099991111"]
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # get friends list count after destroy friendship
+        response = self.client.get('/friends/list', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert before_friends_count == len(response[Protocol.DATA]) + 2
+
+        # create friendship with pine, no pine user
+        process_session(self.client, user_id=3)
+        response = self.client.post('/friends/create',
+                                    data=json.dumps({
+                                        'phone_numbers': ["01032080403", "01099991111"]
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # get friends list count
+        response = self.client.get('/friends/list', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        before_friends_count = len(response[Protocol.DATA])
+
+        # destroy friendship
+        response = self.client.post('/friends/destroy',
+                                    data=json.dumps({
+                                        'phone_numbers': ["01032080403", "01099991111"]
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # get friends list count after destroy friendship
+        response = self.client.get('/friends/list', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert before_friends_count == len(response[Protocol.DATA]) + 2

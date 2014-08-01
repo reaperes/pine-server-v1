@@ -85,40 +85,15 @@ def post_friends_create(request):
 
         phone_numbers = req_json['phone_numbers']
 
+        user = Users.objects.get(id=user_id)
+        from pine.service import friendship
         for target_phone_number in phone_numbers:
-            user = Users.objects.get(id=user_id)
-
-            target_phone_id = Phones.objects.filter(phone_number=target_phone_number)
-            if target_phone_id.exists():
-                target_phone = target_phone_id[0]
-
-                if not Users.objects.filter(phone=target_phone).exists():
-                    friend_phone = Phones.objects.create(phone_number=target_phone_number)
-                    user.friend_phones.add(friend_phone)
-                    continue
-
-                target = Users.objects.get(phone=target_phone)
-                target_friend_phone_ids = [phone.id for phone in target.friend_phones.only('id')]
-                user.friend_phones.add(target_phone)
-                user_phone_id = user.phone.id
-
-                flag_target_has_user_phone_id = user_phone_id in target_friend_phone_ids
-
-                if flag_target_has_user_phone_id:
-                    user.friends.add(target)    # symmetrical model
-                elif flag_target_has_user_phone_id:
-                    target.followings.add(user)
-                else:
-                    user.followings.add(target)
-
-            else:
-                friend_phone = Phones.objects.create(phone_number=target_phone_number)
-                user.friend_phones.add(friend_phone)
+            friendship.create_friendship(user, target_phone_number)
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
-        response_data[Protocol.MESSAGE] = err
+        response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
 
@@ -157,17 +132,14 @@ def post_friends_destroy(request):
         user = Users.objects.get(id=user_id)
 
         phone_numbers = req_json['phone_numbers']
-
         for target_phone_number in phone_numbers:
             target_phone_query = Phones.objects.filter(phone_number=target_phone_number)
             if target_phone_query.exists():
                 target_phone = target_phone_query[0]
                 user.friend_phones.remove(target_phone)
-
                 target_query = Users.objects.filter(phone=target_phone)
                 if not target_query.exists():
                     continue
-
                 target = Users.objects.get(phone=target_phone)
 
                 if user.friends.filter(id=target.id).exists():
