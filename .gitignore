@@ -1,1 +1,3 @@
 ./ServerTest
+*.pyc
+*.pyo
