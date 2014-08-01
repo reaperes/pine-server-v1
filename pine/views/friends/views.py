@@ -44,7 +44,6 @@ def get_friends_list(request):
         phones = [phone.phone_number for phone in user.friend_phones.all()]
         response_data[Protocol.DATA] = phones
         response_data[Protocol.RESULT] = Protocol.SUCCESS
-
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
 
@@ -84,7 +83,6 @@ def post_friends_create(request):
         user_id = int(request.session['user_id'])
 
         phone_numbers = req_json['phone_numbers']
-
         user = Users.objects.get(id=user_id)
         from pine.service import friendship
         for target_phone_number in phone_numbers:
@@ -133,9 +131,8 @@ def post_friends_destroy(request):
 
         phone_numbers = req_json['phone_numbers']
         for target_phone_number in phone_numbers:
-            target_phone_query = Phones.objects.filter(phone_number=target_phone_number)
-            if target_phone_query.exists():
-                target_phone = target_phone_query[0]
+            if Phones.objects.filter(phone_number=target_phone_number).exists():
+                target_phone = Phones.objects.get(phone_number=target_phone_number)
                 user.friend_phones.remove(target_phone)
                 target_query = Users.objects.filter(phone=target_phone)
                 if not target_query.exists():
@@ -191,6 +188,6 @@ def get_friends_handshake_count(request):
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
-        response_data[Protocol.MESSAGE] = err
+        response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')

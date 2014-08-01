@@ -145,7 +145,7 @@ def get_friend_timeline_since_offset(request):
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
-        response_data[Protocol.MESSAGE] = err
+        response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
 

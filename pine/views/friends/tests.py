@@ -149,6 +149,16 @@ class ReportedBugTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
+        # create friendship with no pine user again
+        process_session(self.client, user_id=3)
+        response = self.client.post('/friends/create',
+                                    data=json.dumps({
+                                        'phone_numbers': ["01087537711"]
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
         # get friends list count
         response = self.client.get('/friends/list', content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
@@ -158,7 +168,7 @@ class ReportedBugTestCase(TestCase, LoadFixtures):
         # destroy friendship
         response = self.client.post('/friends/destroy',
                                     data=json.dumps({
-                                        'phone_numbers': ["01032080403", "01099991111"]
+                                        'phone_numbers': ["01032080403", "01099991111", '01087537711']
                                     }),
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
@@ -168,7 +178,7 @@ class ReportedBugTestCase(TestCase, LoadFixtures):
         response = self.client.get('/friends/list', content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert before_friends_count == len(response[Protocol.DATA]) + 2
+        assert before_friends_count == len(response[Protocol.DATA]) + 3
 
         # create friendship with pine, no pine user
         process_session(self.client, user_id=3)

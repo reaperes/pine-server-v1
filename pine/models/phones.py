@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Phones(models.Model):
-    phone_number = models.CharField(max_length=15)
+    phone_number = models.CharField(max_length=15, unique=True)
 
     class Meta:
         app_label = 'pine'
