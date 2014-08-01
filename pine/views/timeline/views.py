@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 
 from pine.models import Threads
