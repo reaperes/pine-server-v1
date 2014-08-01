@@ -237,17 +237,21 @@ def post_thread_like(request, thread_id):
         Protocol.MESSAGE: ''
     }
 
-    user_id = request.session['user_id']
+    try:
+        user_id = int(request.session['user_id'])
+        user = Users.objects.get(id=user_id)
 
-    # update db
-    thread = Threads.objects.get(id=int(thread_id))
-    thread_likes = [user.id for user in thread.likes.only('id')]
-    if user_id in thread_likes:
-        response_data[Protocol.MESSAGE] = 'Warn: User has already liked'
-    else:
-        thread.likes.add(user_id)
+        # update db
+        thread = Threads.objects.get(id=int(thread_id))
+        thread_likes = [user.id for user in thread.likes.only('id')]
+        if user_id in thread_likes:
+            response_data[Protocol.MESSAGE] = 'Warn: User has already liked'
+        else:
+            thread.likes.add(user)
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
 
-    response_data[Protocol.RESULT] = Protocol.SUCCESS
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
 

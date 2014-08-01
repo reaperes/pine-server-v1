@@ -123,4 +123,26 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
 
 class ReportedBugTestCase(TestCase, LoadFixtures):
     def setUp(self):
+        self.client = Client()
         pass
+
+    def test_like_unlike_like_crash(self):
+        process_session(self.client, user_id=3)
+
+        # like 8 thread
+        response = self.client.post('/threads/8/like',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # unlike thread
+        response = self.client.post('/threads/8/unlike',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # like thread
+        response = self.client.post('/threads/8/like',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
