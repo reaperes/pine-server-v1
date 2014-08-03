@@ -215,7 +215,7 @@ class ReportedBugTestCase(TestCase, LoadFixtures):
         process_session(self.client, user_id=3)
         response = self.client.post('/friends/create',
                                     data=json.dumps({
-                                        'phone_numbers': ['01011111111', '01022222222']
+                                        'phone_numbers': ['01011111111', '01011111111']
                                     }),
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
@@ -223,7 +223,7 @@ class ReportedBugTestCase(TestCase, LoadFixtures):
 
         response = self.client.post('/friends/create',
                                     data=json.dumps({
-                                        'phone_numbers': ['01011111111', '01022222222']
+                                        'phone_numbers': ['01011111111', '01011111111']
                                     }),
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
