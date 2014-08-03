@@ -210,3 +210,21 @@ class ReportedBugTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert before_friends_count == len(response[Protocol.DATA]) + 2
+
+    def test_create_duplicated_friendship(self):
+        process_session(self.client, user_id=3)
+        response = self.client.post('/friends/create',
+                                    data=json.dumps({
+                                        'phone_numbers': ['01011111111', '01022222222']
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        response = self.client.post('/friends/create',
+                                    data=json.dumps({
+                                        'phone_numbers': ['01011111111', '01022222222']
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS

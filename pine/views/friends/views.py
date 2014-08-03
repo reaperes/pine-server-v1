@@ -1,5 +1,6 @@
 import json
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST, require_GET
@@ -69,7 +70,6 @@ response:
 
 """
 
-# todo : need to more human readable
 @login_required
 @require_POST
 def post_friends_create(request):
