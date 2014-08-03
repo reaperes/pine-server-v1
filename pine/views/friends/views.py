@@ -77,7 +77,6 @@ def post_friends_create(request):
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: ''
     }
-
     try:
         req_json = json.loads(request.body.decode('utf-8'))
         user_id = int(request.session['user_id'])
@@ -91,6 +90,7 @@ def post_friends_create(request):
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
+        print(str(err))
         response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
