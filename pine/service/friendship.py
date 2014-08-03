@@ -20,14 +20,17 @@ def create_friendship(user, target_phone_number):
         test = 3
         # add target phone to friends phones
         user.friend_phones.add(target_phone)
-
+        test = 3.1
         # check for performance.
         # If target is no pine user it return
         target_user_query = Users.objects.filter(phone=target_phone)
+        test = 3.2
         target_user = None
         if target_user_query.exists():
-            target_user = target_user_query[0]
+            test = 3.21
+            target_user = Users.objects.get(phone=target_phone)
         else:
+            test = 3.22
             return
         test = 4
         # configure friends, following
