@@ -19,7 +19,12 @@ def create_friendship(user, target_phone_number):
             return
         test = 3
         # add target phone to friends phones
-        user.friend_phones.add(target_phone)
+        try:
+            user.friend_phones.add(target_phone)
+        except Exception as err:
+            print('hu????!!!!!!!')
+            print(str(err))
+            raise err
         test = 3.1
         # check for performance.
         # If target is no pine user it return
