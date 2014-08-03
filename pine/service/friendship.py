@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from pine.models import Users, Phones
 
 
@@ -18,7 +19,8 @@ def create_friendship(user, target_phone_number):
     # add target phone to friends phones
     try:
         user.friend_phones.add(target_phone)
-    except Exception as err:
+        user.save()
+    except IntegrityError as err:
         print(str(user))
         print(str(target_phone))
         print(str(err))
