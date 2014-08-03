@@ -85,7 +85,10 @@ def post_friends_create(request):
         user = Users.objects.get(id=user_id)
         from pine.service import friendship
         for target_phone_number in phone_numbers:
-            friendship.create_friendship(user, target_phone_number)
+            try:
+                friendship.create_friendship(user, target_phone_number)
+            except IntegrityError as err:
+                pass
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 

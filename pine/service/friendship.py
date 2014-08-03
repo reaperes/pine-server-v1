@@ -16,15 +16,11 @@ def create_friendship(user, target_phone_number):
     if user.friend_phones.filter(id=target_phone.id).exists():
         return
 
+    # todo: code is fuck. Need to research django source or report django community.
     # add target phone to friends phones
     try:
         user.friend_phones.add(target_phone)
-        user.save()
     except IntegrityError as err:
-        print(str(user))
-        print(str(target_phone))
-        print(str(err))
-        print('here?')
         raise err
 
     # check for performance.
