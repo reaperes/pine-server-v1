@@ -9,7 +9,6 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
 
     # url(r'^admin/', include(admin.site.urls)),
-    url(r'^test.*', 'pine.test.views.pine_test'),
 
     url(r'^users/login', 'pine.views.users.views.post_login'),
     url(r'^users/register$', 'pine.views.users.views.post_register'),
