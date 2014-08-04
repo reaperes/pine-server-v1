@@ -302,3 +302,6 @@ gcm = GCM()
 
 def notify(registration_ids=None, data=None):
     gcm.plaintext_request(registration_ids, data)
+
+
+push = GCM(API_KEY)

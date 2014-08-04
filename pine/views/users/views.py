@@ -1,4 +1,5 @@
 import json
+from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -55,7 +56,7 @@ def post_login(request):
             response_data[Protocol.MESSAGE] = 'Username or password does not match.'
 
     except Exception as err:
-        response_data[Protocol.MESSAGE] = err
+        response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
 
@@ -102,6 +103,54 @@ def post_register(request):
             phone = Phones.objects.create(phone_number=username)
 
         Users.objects.create(account=account, phone=phone)
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
+""" post register push service
+
+request:
+    Content-Type: application/json;
+    {
+        device_type:    (String, android or ios),
+        push_id:        (String, registration id)
+    }
+
+response:
+    Content-Type: application/json;
+    {
+        result:     (String, SUCCESS or FAIL),
+        message:    (String, error message)
+    }
+
+"""
+
+
+@login_required
+@require_POST
+def post_register_push(request):
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: ''
+    }
+
+    try:
+        user_id = int(request.session['user_id'])
+        req_json = json.loads(request.body.decode('utf-8'))
+        device_type = req_json['device_type'].lower()
+        push_id = req_json['push_id']
+
+        user = Users.objects.get(id=user_id)
+        if device_type == 'android':
+            user.device = 'android'
+        elif device_type == 'ios':
+            user.device = 'ios'
+        user.push_id = push_id
+
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:

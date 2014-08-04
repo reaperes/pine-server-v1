@@ -4,12 +4,12 @@ from django.test import TestCase
 from django.test.client import Client
 
 from pine.pine import Protocol
-from pine.views.tests_support import LoadFixtures
+from pine.views.tests_support import LoadFixtures, process_session
 
 
 class UnitTestCase(TestCase, LoadFixtures):
     def setUp(self):
-        pass
+        self.client = Client()
 
     def test_post_login(self):
         protocol = {
@@ -70,3 +70,13 @@ class UnitTestCase(TestCase, LoadFixtures):
                           content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.FAIL
+
+    def test_register_push_service(self):
+        process_session(self.client, user_id=1)
+        response = self.client.post('/users/register/push',
+                                    data=json.dumps({
+                                        'device_type': 'android',
+                                        'push_id': '1234567890'
+                                    }), content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS, response
