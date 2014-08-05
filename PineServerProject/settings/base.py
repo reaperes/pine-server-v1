@@ -53,6 +53,7 @@ ROOT_URLCONF = 'PineServerProject.urls'
 
 WSGI_APPLICATION = 'PineServerProject.wsgi.application'
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
