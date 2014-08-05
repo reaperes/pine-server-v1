@@ -1,5 +1,6 @@
 import json
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 
 from django.http import HttpResponse
 from django.utils import timezone
@@ -160,6 +161,7 @@ response:
 
 @login_required
 @require_POST
+@transaction.atomic
 def post_comment_like(request, comment_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -201,6 +203,7 @@ response:
 
 @login_required
 @require_POST
+@transaction.atomic
 def post_comment_unlike(request, comment_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
