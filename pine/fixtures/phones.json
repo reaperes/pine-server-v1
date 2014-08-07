@@ -66,6 +66,13 @@
     "model": "pine.phones",
     "pk": 10,
     "fields": {
+      "phone_number": "01085174557"
+    }
+  },
+  {
+    "model": "pine.phones",
+    "pk": 11,
+    "fields": {
       "phone_number": "01026969960"
     }
   }
