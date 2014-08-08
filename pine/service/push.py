@@ -9,12 +9,12 @@ PUSH_NEW_THREAD = 0
 
 
 def send_push_message(user_ids, message_type=None):
-    if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.production':
-        PushThread(user_ids=user_ids, message_type=message_type).start()
-    else:
+    if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
         # below code for test
         # _send_push_message(user_ids=user_ids, message_type=message_type)
         pass
+    else:
+        PushThread(user_ids=user_ids, message_type=message_type).start()
 
 
 class PushThread(Thread):
