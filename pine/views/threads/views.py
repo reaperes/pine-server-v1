@@ -12,6 +12,7 @@ from django.views.decorators.http import require_http_methods, require_GET, requ
 from pine.models import Threads, Users
 from pine.pine import Protocol
 from pine.util import fileutil
+from pine.service.push import send_push_message, PUSH_NEW_THREAD
 
 
 """ post thread json protocol
@@ -86,12 +87,15 @@ def post_thread(request):
                                             content=req_json['content'])
 
         thread.readers.add(user.id)
-        thread.readers.add(*[user.id for user in user.friends.only('pk')])
+        readers = [user.id for user in user.friends.only('pk')]
+        thread.readers.add(*readers)
 
         response_data = {
             Protocol.RESULT: Protocol.SUCCESS,
             Protocol.MESSAGE: ''
         }
+
+        send_push_message(readers, message_type=PUSH_NEW_THREAD)
 
     # if malformed protocol
     except Exception as err:

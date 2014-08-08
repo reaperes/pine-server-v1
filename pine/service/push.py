@@ -1,307 +1,47 @@
-import urllib.request
-from urllib import parse
+import os
 import json
-from collections import defaultdict
-import time
-import random
+from threading import Thread
+import requests
+
+from pine.models.users import Users
+
+PUSH_NEW_THREAD = 0
 
 
-GCM_URL = 'https://android.googleapis.com/gcm/send'
-API_KEY = 'AIzaSyCSXLo9AP5tFKGGGSZ7GXst8_PWCKlKN_k'
-
-
-class GCMException(Exception): pass
-class GCMMalformedJsonException(GCMException): pass
-class GCMConnectionException(GCMException): pass
-class GCMAuthenticationException(GCMException): pass
-class GCMTooManyRegIdsException(GCMException): pass
-class GCMNoCollapseKeyException(GCMException): pass
-class GCMInvalidTtlException(GCMException): pass
-
-# Exceptions from Google responses
-class GCMMissingRegistrationException(GCMException): pass
-class GCMMismatchSenderIdException(GCMException): pass
-class GCMNotRegisteredException(GCMException): pass
-class GCMMessageTooBigException(GCMException): pass
-class GCMInvalidRegistrationException(GCMException): pass
-class GCMUnavailableException(GCMException): pass
-
-
-def group_response(response, registration_ids, key):
-    # Pair up results and reg_ids
-    mapping = zip(registration_ids, response['results'])
-    # Filter by key
-    filtered = filter(lambda x: key in x[1], mapping)
-    # Only consider the value in the dict
-    tupled = [(s[0], s[1][key]) for s in filtered]
-    # Grouping of errors and mapping of ids
-    if key is 'registration_id':
-        grouping = {}
-        for k, v in tupled:
-            grouping[k] = v
+def send_push_message(user_ids, message_type=None):
+    if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.production':
+        PushThread(user_ids=user_ids, message_type=message_type).start()
     else:
-        grouping = defaultdict(list)
-        for k, v in tupled:
-            grouping[v].append(k)
-
-    if len(grouping) == 0:
-        return
-    return grouping
+        # below code for test
+        # _send_push_message(user_ids=user_ids, message_type=message_type)
+        pass
 
 
-def urlencode_utf8(params):
-    """
-    UTF-8 safe variant of urllib.urlencode.
-    http://stackoverflow.com/a/8152242
-    """
+class PushThread(Thread):
+    def __init__(self, user_ids=None, message_type=None):
+        super().__init__()
+        self.user_ids = user_ids
+        self.message_type = message_type
 
-    if hasattr(params, 'items'):
-        params = params.items()
-
-    params =  (
-        '='.join((
-            urllib.parse.quote_plus(k.encode('utf8'), safe='/'),
-            urllib.parse.quote_plus(v.encode('utf8'), safe='/')
-        )) for k, v in params
-    )
-
-    return '&'.join(params)
+    def run(self):
+        _send_push_message(user_ids=self.user_ids, message_type=self.message_type)
 
 
-class GCM(object):
+def _send_push_message(user_ids, message_type=None):
+    registration_ids = []
+    for user_id in user_ids:
+        user = Users.objects.get(pk=user_id)
+        if user.device == 'android':
+            registration_ids.append(user.push_id)
 
-    # Timeunit is milliseconds.
-    BACKOFF_INITIAL_DELAY = 1000
-    MAX_BACKOFF_DELAY = 1024000
+    message = 'I want to tell you something.'
+    if message_type == PUSH_NEW_THREAD:
+        pass
 
-    def __init__(self, api_key=API_KEY, url=GCM_URL, proxy=None):
-        """ api_key : google api key
-            url: url of gcm service.
-            proxy: can be string "http://host:port" or dict {'https':'host:port'}
-        """
-        self.api_key = api_key
-        self.url = url
-        if proxy:
-            protocol = url.split(':')[0]
-            proxy={protocol:proxy}
+    response = requests.post('http://125.209.194.90:8000/push/gcm', data=json.dumps({
+        'registration_ids': registration_ids,
+        'message': message
+    }))
 
-            auth = urllib.request.HTTPBasicAuthHandler()
-            opener = urllib.request.build_opener(urllib.request.ProxyHandler(proxy), auth, urllib.request.HTTPHandler)
-            urllib.request.install_opener(opener)
-
-
-    def construct_payload(self, registration_ids, data=None, collapse_key=None,
-                            delay_while_idle=False, time_to_live=None, is_json=True):
-        """
-        Construct the dictionary mapping of parameters.
-        Encodes the dictionary into JSON if for json requests.
-        Helps appending 'data.' prefix to the plaintext data: 'hello' => 'data.hello'
-
-        :return constructed dict or JSON payload
-        :raises GCMInvalidTtlException: if time_to_live is invalid
-        :raises GCMNoCollapseKeyException: if collapse_key is missing when time_to_live is used
-        """
-
-        if time_to_live:
-            if time_to_live > 2419200 or time_to_live < 0:
-                raise GCMInvalidTtlException("Invalid time to live value")
-
-        if is_json:
-            payload = {'registration_ids': registration_ids}
-            if data:
-                payload['data'] = data
-        else:
-            payload = {'registration_id': registration_ids}
-            if data:
-                temp_data = {}
-                plaintext_data = data.copy()
-                for k in plaintext_data.keys():
-                    #plaintext_data['data.%s' % k] = plaintext_data.pop(k)
-                    temp_data['data.%s' % k] = plaintext_data.get(k)
-                payload.update(temp_data)
-
-        if delay_while_idle:
-            payload['delay_while_idle'] = delay_while_idle
-
-        if time_to_live is not None and time_to_live >= 0:
-            payload['time_to_live'] = time_to_live
-            if collapse_key is None:
-                raise GCMNoCollapseKeyException("collapse_key is required when time_to_live is provided")
-
-        if collapse_key:
-            payload['collapse_key'] = collapse_key
-            payload['restricted_package_name'] = 'net.alluser.rocketpushapp'
-
-        if is_json:
-            payload = json.dumps(payload)
-
-        return payload
-
-    def make_request(self, data, is_json=True):
-        """
-        Makes a HTTP request to GCM servers with the constructed payload
-
-        :param data: return value from construct_payload method
-        :raises GCMMalformedJsonException: if malformed JSON request found
-        :raises GCMAuthenticationException: if there was a problem with authentication, invalid api key
-        :raises GCMConnectionException: if GCM is screwed
-        """
-
-        headers = {
-            'Authorization': 'key=%s' % self.api_key,
-        }
-        # Default Content-Type is defaulted to application/x-www-form-urlencoded;charset=UTF-8
-        if is_json:
-            headers['Content-Type'] = 'application/json'
-            data = data.encode('utf-8')
-#             data= bytes(data, 'utf-8')
-
-        if not is_json:
-            data = urlencode_utf8(data)
-        req = urllib.request.Request(self.url, data, headers)
-
-        try:
-            response = urllib.request.urlopen(req).read()
-        except urllib.request.HTTPError as e:
-            if e.code == 400:
-                raise GCMMalformedJsonException("The request could not be parsed as JSON")
-            elif e.code == 401:
-                raise GCMAuthenticationException("There was an error authenticating the sender account")
-            elif e.code == 503:
-                raise GCMUnavailableException("GCM service is unavailable")
-            else:
-                error = "GCM service error: %d" % e.code
-                raise GCMUnavailableException(error)
-        except urllib.request.URLError as e:
-            raise GCMConnectionException("There was an internal error in the GCM server while trying to process the request")
-
-        if is_json:
-            response = response.decode('utf-8')
-            response = json.loads(response)
-        return response
-
-    def raise_error(self, error):
-        if error == 'InvalidRegistration':
-            raise GCMInvalidRegistrationException("Registration ID is invalid")
-        elif error == 'Unavailable':
-            # Plain-text requests will never return Unavailable as the error code.
-            # http://developer.android.com/guide/google/gcm/gcm.html#error_codes
-            raise GCMUnavailableException("Server unavailable. Resent the message")
-        elif error == 'NotRegistered':
-            raise GCMNotRegisteredException("Registration id is not valid anymore")
-        elif error == 'MismatchSenderId':
-            raise GCMMismatchSenderIdException("A Registration ID is tied to a certain group of senders")
-        elif error == 'MessageTooBig':
-            raise GCMMessageTooBigException("Message can't exceed 4096 bytes")
-
-    def handle_plaintext_response(self, response):
-
-        # Split response by line
-        response_lines = response.strip().split('\n')
-        # Split the first line by =
-        key, value = response_lines[0].split('=')
-        if key == 'Error':
-            self.raise_error(value)
-        else:
-            if len(response_lines) == 2:
-                return response_lines[1].split('=')[1]
-            return
-
-    def handle_json_response(self, response, registration_ids):
-        errors = group_response(response, registration_ids, 'error')
-        canonical = group_response(response, registration_ids, 'registration_id')
-
-        info = {}
-        if errors:
-            info.update({'errors': errors})
-        if canonical:
-            info.update({'canonical': canonical})
-
-        return info
-
-    def extract_unsent_reg_ids(self, info):
-        if 'errors' in info and 'Unavailable' in info['errors']:
-            return info['errors']['Unavailable']
-        return []
-
-    def plaintext_request(self, registration_id, data=None, collapse_key=None,
-                            delay_while_idle=False, time_to_live=None, retries=5):
-        """
-        Makes a plaintext request to GCM servers
-
-        :param registration_id: string of the registration id
-        :param data: dict mapping of key-value pairs of messages
-        :return dict of response body from Google including multicast_id, success, failure, canonical_ids, etc
-        :raises GCMMissingRegistrationException: if registration_id is not provided
-        """
-
-        if not registration_id:
-            raise GCMMissingRegistrationException("Missing registration_id")
-
-        payload = self.construct_payload(
-            registration_id, data, collapse_key,
-            delay_while_idle, time_to_live, False
-        )
-
-        attempt = 0
-        backoff = self.BACKOFF_INITIAL_DELAY
-        for attempt in range(retries):
-            try:
-                response = self.make_request(payload, is_json=False)
-                return self.handle_plaintext_response(response)
-            except GCMUnavailableException:
-                sleep_time = backoff / 2 + random.randrange(backoff)
-                time.sleep(float(sleep_time) / 1000)
-                if 2 * backoff < self.MAX_BACKOFF_DELAY:
-                    backoff *= 2
-
-        raise IOError("Could not make request after %d attempts" % attempt)
-
-    def json_request(self, registration_ids, data=None, collapse_key=None,
-                        delay_while_idle=False, time_to_live=None, retries=5):
-        """
-        Makes a JSON request to GCM servers
-
-        :param registration_ids: list of the registration ids
-        :param data: dict mapping of key-value pairs of messages
-        :return dict of response body from Google including multicast_id, success, failure, canonical_ids, etc
-        :raises GCMMissingRegistrationException: if the list of registration_ids exceeds 1000 items
-        """
-
-        if not registration_ids:
-            raise GCMMissingRegistrationException("Missing registration_ids")
-        if len(registration_ids) > 1000:
-            raise GCMTooManyRegIdsException("Exceded number of registration_ids")
-
-        info = None
-        attempt = 0
-        backoff = self.BACKOFF_INITIAL_DELAY
-        for attempt in range(retries):
-            payload = self.construct_payload(
-                registration_ids, data, collapse_key,
-                delay_while_idle, time_to_live
-            )
-            response = self.make_request(payload, is_json=True)
-            info = self.handle_json_response(response, registration_ids)
-
-            unsent_reg_ids = self.extract_unsent_reg_ids(info)
-            if unsent_reg_ids:
-                registration_ids = unsent_reg_ids
-                sleep_time = backoff / 2 + random.randrange(backoff)
-                time.sleep(float(sleep_time) / 1000)
-                if 2 * backoff < self.MAX_BACKOFF_DELAY:
-                    backoff *= 2
-            else:
-                break
-
-        return info
-
-
-gcm = GCM()
-
-
-def notify(registration_ids=None, data=None):
-    gcm.plaintext_request(registration_ids, data)
-
-
-push = GCM(API_KEY)
+    if response.status_code != 200:
+        print(response.text)

@@ -54,7 +54,7 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
             }
             response = self.client.post(URL, j).content.decode('utf-8')
             response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.RESULT] == Protocol.SUCCESS, response
 
     def test_post_friends_thread_no_image(self):
         process_session(self.client, user_id=2)

@@ -25,4 +25,4 @@ class Users(models.Model):
                 + '], followings: [' + ' '.join(str(n) for n in [user.id for user in self.followings.only('id')])
                 + '], blocks: [' + ' '.join(str(n) for n in [user.id for user in self.blocks.only('id')])
                 + '], device: ' + str(self.device)
-                + ' push_id: ' + self.push_id)
+                + ' push_id: ' + str(self.push_id))
