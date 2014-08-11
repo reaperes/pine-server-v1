@@ -7,6 +7,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from pine.models import Threads, Users, Comments
 from pine.pine import Protocol
+from pine.service.push import send_push_message, PUSH_NEW_COMMENT, PUSH_LIKE_COMMENT
 
 
 @login_required
@@ -137,6 +138,8 @@ def post_comment(request, thread_id):
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
+        send_push_message([thread.author.pk], message_type=PUSH_NEW_COMMENT)
+
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
 
@@ -177,6 +180,8 @@ def post_comment_like(request, comment_id):
             comment.likes.add(user_id)
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+        send_push_message([comment.author.pk], message_type=PUSH_LIKE_COMMENT)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

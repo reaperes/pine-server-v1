@@ -12,7 +12,7 @@ from django.views.decorators.http import require_http_methods, require_GET, requ
 from pine.models import Threads, Users
 from pine.pine import Protocol
 from pine.util import fileutil
-from pine.service.push import send_push_message, PUSH_NEW_THREAD
+from pine.service.push import send_push_message, PUSH_NEW_THREAD, PUSH_LIKE_THREAD
 
 
 """ post thread json protocol
@@ -253,6 +253,8 @@ def post_thread_like(request, thread_id):
         else:
             thread.likes.add(user)
         response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+        send_push_message([thread.author.pk], message_type=PUSH_LIKE_THREAD)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

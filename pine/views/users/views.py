@@ -150,7 +150,7 @@ def post_register_push(request):
         elif device_type == 'ios':
             user.device = 'ios'
         user.push_id = push_id
-
+        user.save()
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
