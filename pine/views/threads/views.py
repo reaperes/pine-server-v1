@@ -95,7 +95,7 @@ def post_thread(request):
             Protocol.MESSAGE: ''
         }
 
-        send_push_message(readers, message_type=PUSH_NEW_THREAD)
+        send_push_message(readers, push_type=PUSH_NEW_THREAD, thread_id=thread.pk)
 
     # if malformed protocol
     except Exception as err:
@@ -254,7 +254,7 @@ def post_thread_like(request, thread_id):
             thread.likes.add(user)
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
-        send_push_message([thread.author.pk], message_type=PUSH_LIKE_THREAD)
+        send_push_message([thread.author.pk], push_type=PUSH_LIKE_THREAD, thread_id=thread_id)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

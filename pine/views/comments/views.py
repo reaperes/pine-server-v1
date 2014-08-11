@@ -138,7 +138,7 @@ def post_comment(request, thread_id):
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
-        send_push_message([thread.author.pk], message_type=PUSH_NEW_COMMENT)
+        send_push_message([thread.author.pk], push_type=PUSH_NEW_COMMENT, thread_id=thread_id)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
@@ -181,7 +181,7 @@ def post_comment_like(request, comment_id):
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
-        send_push_message([comment.author.pk], message_type=PUSH_LIKE_COMMENT)
+        send_push_message([comment.author.pk], push_type=PUSH_LIKE_COMMENT, thread_id=comment.thread_id, comment_id=comment_id)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

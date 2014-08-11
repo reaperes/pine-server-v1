@@ -5,54 +5,66 @@ import requests
 
 from pine.models.users import Users
 
-PUSH_NEW_THREAD = 0
-PUSH_NEW_COMMENT = 1
+PUSH_NEW_THREAD = 10
+PUSH_NEW_COMMENT = 11
 
-PUSH_LIKE_THREAD = 10
-PUSH_LIKE_COMMENT = 11
+PUSH_LIKE_THREAD = 20
+PUSH_LIKE_COMMENT = 21
 
 
-def send_push_message(user_ids, message_type=None):
+def send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None):
     if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
         # below code for test
     # _send_push_message(user_ids=user_ids, message_type=message_type)
         pass
     else:
-        PushThread(user_ids=user_ids, message_type=message_type).start()
+        PushThread(user_ids=user_ids, push_type=push_type,
+                   thread_id=thread_id, comment_id=comment_id).start()
 
 
 class PushThread(Thread):
-    def __init__(self, user_ids=None, message_type=None):
+    def __init__(self, user_ids=None, push_type=None, thread_id=None, comment_id=None):
         super().__init__()
         self.user_ids = user_ids
-        self.message_type = message_type
+        self.push_type = push_type
+        self.thread_id = thread_id
+        self.comment_id = comment_id
 
     def run(self):
-        _send_push_message(user_ids=self.user_ids, message_type=self.message_type)
+        _send_push_message(user_ids=self.user_ids, push_type=self.push_type,
+                           thread_id=self.thread_id, comment_id=self.comment_id)
 
 
-def _send_push_message(user_ids, message_type=None):
+def _send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None):
     registration_ids = []
     for user_id in user_ids:
         user = Users.objects.get(pk=user_id)
         if user.device == 'android':
             registration_ids.append(user.push_id)
 
-    message = 'I want to tell you something.'
-    if message_type == PUSH_NEW_THREAD:
-        message = '당신의 친구가 새로운 글을 올렸습니다.'
-    elif message_type == PUSH_NEW_COMMENT:
-        message = '작성하신 글에 새로운 댓글이 달렸습니다.'
-    elif message_type == PUSH_LIKE_THREAD:
-        message = '작성하신 글에 하트가 달렸습니다 ♥'
-    elif message_type == PUSH_LIKE_COMMENT:
-        message = '작성하신 댓글에 하트가 달렸습니다 ♥'
+    message = ''
+    if push_type == PUSH_NEW_THREAD:
+        message = '당신의 친구가 새로운 글을 남겼습니다'
+    elif push_type == PUSH_NEW_COMMENT:
+        message = '누군가가 당신의 글에 댓글을 달았습니다'
+    elif push_type == PUSH_LIKE_THREAD:
+        message = '누군가가 당신의 글에 하트를 달았습니다 ♥'
+    elif push_type == PUSH_LIKE_COMMENT:
+        message = '누군가 당신의 댓글에 하트를 달았습니다 ♥'
+
+    send_data = {
+        'push_type': push_type,
+        'message': message
+    }
+
+    if thread_id is not None:
+        send_data['thread_id'] = thread_id
+    if comment_id is not None:
+        send_data['comment_id'] = comment_id
 
     response = requests.post('http://125.209.194.90:8000/push/gcm', data=json.dumps({
         'registration_ids': registration_ids,
-        'data': {
-            'message': message
-        }
+        'data': send_data
     }))
 
     if response.status_code != 200:
