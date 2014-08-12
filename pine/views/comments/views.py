@@ -73,9 +73,7 @@ def get_comments(request, thread_id):
             if comment.author_id == thread.author_id:
                 comment_type |= (1 << 1)
 
-            if comment.author_id in virtual_id:
-                virtual_id[comment.author_id] += 1
-            else:
+            if comment.author_id not in virtual_id:
                 virtual_id[comment.author_id] = virtual_id_index
                 virtual_id_index += 1
 

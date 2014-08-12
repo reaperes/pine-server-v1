@@ -126,3 +126,48 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(self.client.get('/threads/1/comments').content.decode('utf-8'))
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA][0]['like_count'] == before_comment_like_count - 1
+
+
+class ReportedTestCase(TestCase, LoadFixtures):
+    def setUp(self):
+        self.client = Client()
+
+    def test_get_thread_comment_user_id_after_post_thread_comment(self):
+        # thread 1 : comment user 1 8 4 1 8
+        # Step 1. Setting comments
+        process_session(self.client, user_id=1)
+        response = self.client.post('/threads/1/comments',
+                                    data=json.dumps({'content': 'author comment'}),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        process_session(self.client, user_id=8)
+        response = self.client.post('/threads/1/comments',
+                                    data=json.dumps({'content': 'user 8 comment'}),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # Step 2. check comment type 0, 3
+        process_session(self.client, user_id=1)
+        response = self.client.get('/threads/1/comments').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA][0]['comment_type'] == 3
+        assert response[Protocol.DATA][1]['comment_type'] == 0
+
+        # Step 3. check comment type 0, 3
+        process_session(self.client, user_id=4)
+        response = self.client.get('/threads/1/comments').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA][0]['comment_type'] == 2
+        assert response[Protocol.DATA][2]['comment_type'] == 1
+
+        # Step 4. check comment user_id
+        assert response[Protocol.DATA][0]['comment_user_id'] == 0
+        assert response[Protocol.DATA][1]['comment_user_id'] == 1
+        assert response[Protocol.DATA][2]['comment_user_id'] == 2
+        assert response[Protocol.DATA][3]['comment_user_id'] == 0
+        assert response[Protocol.DATA][4]['comment_user_id'] == 1
