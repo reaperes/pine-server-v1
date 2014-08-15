@@ -95,7 +95,10 @@ def post_thread(request):
             Protocol.MESSAGE: ''
         }
 
-        send_push_message(readers, push_type=PUSH_NEW_THREAD, thread_id=thread.pk)
+        summary = req_json['content'][:17]
+        if len(req_json['content']) > 17:
+            summary += '...'
+        send_push_message(readers, push_type=PUSH_NEW_THREAD, thread_id=thread.pk, summary=summary)
 
     # if malformed protocol
     except Exception as err:
@@ -141,21 +144,24 @@ def get_thread(request, thread_id):
 
     try:
         thread_id = int(thread_id)
-        user_id = request.session['user_id']
+        user_id = int(request.session['user_id'])
 
         thread = Threads.objects.get(id=thread_id)
-
-        likes = [user.id for user in thread.likes.only('id')]
-        response_data[Protocol.DATA] = {
-            'id': thread.id,
-            'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
-            'like_count': len(likes),
-            'liked': user_id in likes,
-            'image_url': thread.image_url,
-            'content': thread.content,
-            'comment': len(thread.comments_set.all())
-        }
-        response_data[Protocol.RESULT] = Protocol.SUCCESS
+        readers = [user.id for user in thread.readers.only('id')]
+        if user_id in readers:
+            likes = [user.id for user in thread.likes.only('id')]
+            response_data[Protocol.DATA] = {
+                'id': thread.id,
+                'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
+                'like_count': len(likes),
+                'liked': user_id in likes,
+                'image_url': thread.image_url,
+                'content': thread.content,
+                'comment': len(thread.comments_set.all())
+            }
+            response_data[Protocol.RESULT] = Protocol.SUCCESS
+        else:
+            response_data[Protocol.MESSAGE] = 'Err: You have no permission on thread.'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
@@ -254,7 +260,8 @@ def post_thread_like(request, thread_id):
             thread.likes.add(user)
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
-        send_push_message([thread.author.pk], push_type=PUSH_LIKE_THREAD, thread_id=thread_id)
+        if user_id != thread.author_id:
+            send_push_message([thread.author.pk], push_type=PUSH_LIKE_THREAD, thread_id=thread_id)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
@@ -388,6 +395,8 @@ def post_block_thread(request, thread_id):
                 user.blocks.add(block_user)
                 user.friends.remove(block_user)
                 block_user.friends.remove(user)
+
+                block_thread.readers.remove(user)
 
                 response_data = {
                     Protocol.RESULT: Protocol.SUCCESS,

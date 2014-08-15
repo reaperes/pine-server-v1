@@ -132,7 +132,20 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
 
 class IntegrationThreadTestCase(TestCase, LoadFixtures):
     def setUp(self):
-        pass
+        self.client = Client()
+
+    def test_get_thread_after_report_thread(self):
+        # report thread
+        process_session(self.client, user_id=2)
+        response = self.client.post(URL+'/1/block',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # get thread
+        response = self.client.get(URL+'/1', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.FAIL
 
 
 class ReportedBugTestCase(TestCase, LoadFixtures):
