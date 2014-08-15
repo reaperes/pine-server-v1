@@ -66,6 +66,13 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.MESSAGE] == ''
 
+    def test_post_comment_report_myself(self):
+        process_session(self.client, user_id=1)
+        response = self.client.post('/comments/1/report',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.FAIL
+
     def test_post_comment_block(self):
         process_session(self.client, user_id=5)
         response = self.client.post('/comments/2/block',
@@ -73,6 +80,13 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.MESSAGE] == ''
+
+    def test_post_comment_block_myself(self):
+        process_session(self.client, user_id=1)
+        response = self.client.post('/comments/1/block',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.FAIL
 
 
 class IntegrationThreadTestCase(TestCase, LoadFixtures):

@@ -329,16 +329,18 @@ def post_report_thread(request, thread_id):
     }
 
     try:
-        user_id = request.session['user_id']
+        user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
 
         report_thread_id = int(thread_id)
-
         report_thread = Threads.objects.get(id=report_thread_id)
-        report_thread.reports.add(user)
-        report_thread.readers.remove(user)
 
-        response_data[Protocol.RESULT] = Protocol.SUCCESS
+        if user_id != report_thread.author_id:
+            report_thread.reports.add(user)
+            report_thread.readers.remove(user)
+            response_data[Protocol.RESULT] = Protocol.SUCCESS
+        else:
+            response_data[Protocol.MESSAGE] = 'Warn: Cannot report yourself.'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
@@ -376,21 +378,23 @@ def post_block_thread(request, thread_id):
         user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
 
-        if block_thread.author in user.blocks.only('id'):
-            response_data = {
-                Protocol.RESULT: Protocol.SUCCESS,
-                Protocol.MESSAGE: 'Warn: User already blocked.'
-            }
+        if user_id != block_user.pk:
+            if block_thread.author in user.blocks.only('id'):
+                response_data = {
+                    Protocol.RESULT: Protocol.SUCCESS,
+                    Protocol.MESSAGE: 'Warn: User already blocked.'
+                }
+            else:
+                user.blocks.add(block_user)
+                user.friends.remove(block_user)
+                block_user.friends.remove(user)
 
+                response_data = {
+                    Protocol.RESULT: Protocol.SUCCESS,
+                    Protocol.MESSAGE: ''
+                }
         else:
-            user.blocks.add(block_user)
-            user.friends.remove(block_user)
-            block_user.friends.remove(user)
-
-            response_data = {
-                Protocol.RESULT: Protocol.SUCCESS,
-                Protocol.MESSAGE: ''
-            }
+            response_data[Protocol.MESSAGE] = 'Warn: Cannot block yourself'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

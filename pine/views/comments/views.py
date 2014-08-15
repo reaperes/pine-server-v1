@@ -256,11 +256,13 @@ def post_comment_report(request, comment_id):
         user = Users.objects.get(id=user_id)
 
         report_comment_id = int(comment_id)
-
         report_comment = Threads.objects.get(id=report_comment_id)
-        report_comment.reports.add(user)
 
-        response_data[Protocol.RESULT] = Protocol.SUCCESS
+        if user_id != report_comment.author_id:
+            report_comment.reports.add(user)
+            response_data[Protocol.RESULT] = Protocol.SUCCESS
+        else:
+            response_data[Protocol.MESSAGE] = 'Warn: Cannot report yourself'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
@@ -299,12 +301,15 @@ def post_comment_block(request, comment_id):
         block_comment = Comments.objects.get(id=comment_id)
         block_user = block_comment.author
 
-        if block_user not in user.blocks.only('id'):
-            user.blocks.add(block_user)
-            user.friends.remove(block_user)
-            block_user.friends.remove(user)
+        if user_id != block_user.pk:
+            if block_user not in user.blocks.only('id'):
+                user.blocks.add(block_user)
+                user.friends.remove(block_user)
+                block_user.friends.remove(user)
 
-            response_data[Protocol.RESULT] = Protocol.SUCCESS
+                response_data[Protocol.RESULT] = Protocol.SUCCESS
+        else:
+            response_data[Protocol.MESSAGE] = 'Warn: Cannot block yourself'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

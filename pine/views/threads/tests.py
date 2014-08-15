@@ -108,12 +108,26 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
+    def test_post_report_thread_myself(self):
+        process_session(self.client, user_id=1)
+        response = self.client.post(URL+'/1/report',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.FAIL, response
+
     def test_block_thread(self):
         process_session(self.client, user_id=1)
         response = self.client.post(URL+'/5/block',
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS, response[Protocol.MESSAGE]
+
+    def test_block_thread_myself(self):
+        process_session(self.client, user_id=1)
+        response = self.client.post(URL+'/1/block',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.FAIL, response[Protocol.MESSAGE]
 
 
 class IntegrationThreadTestCase(TestCase, LoadFixtures):
