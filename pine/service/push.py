@@ -13,13 +13,13 @@ PUSH_LIKE_COMMENT = 21
 
 
 def send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None, summary=None):
-    # if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
+    if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
         # below code for test
-        _send_push_message(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id, summary=summary)
-        # pass
-    # else:
-    #     PushThread(user_ids=user_ids, push_type=push_type,
-    #                thread_id=thread_id, comment_id=comment_id, summary=summary).start()
+        # _send_push_message(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id, summary=summary)
+        pass
+    else:
+        PushThread(user_ids=user_ids, push_type=push_type,
+                   thread_id=thread_id, comment_id=comment_id, summary=summary).start()
 
 
 class PushThread(Thread):
@@ -128,6 +128,4 @@ def _send_push_message_ios(push_id, push_type=None, thread_id=None):
     if push_type == PUSH_NEW_THREAD:
         del req['thread_id']
 
-    # response = requests.post('http://125.209.194.90:8000/push/apns', data=json.dumps(req))
-    response = requests.post('http://0.0.0.0:8888/push/apns', data=json.dumps(req))
-    print(response)
+    response = requests.post('http://125.209.194.90:8000/push/apns', data=json.dumps(req))
