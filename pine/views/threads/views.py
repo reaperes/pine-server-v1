@@ -87,7 +87,13 @@ def post_thread(request):
                                             content=req_json['content'])
 
         thread.readers.add(user.id)
-        readers = [user.id for user in user.friends.only('pk')]
+
+        readers = []
+        for friend in user.friends.only('pk', 'friend_phones'):
+            friend_phones = [phone.id for phone in friend.friend_phones.only('pk')]
+            if len(friend_phones) >= 4:
+                readers.append(friend.pk)
+
         thread.readers.add(*readers)
 
         response_data = {

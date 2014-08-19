@@ -62,7 +62,7 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
                                     data=json.dumps(self.post_friend_thread_json),
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.RESULT] == Protocol.SUCCESS, response
 
     def test_get_thread(self):
         process_session(self.client, user_id=2)
