@@ -175,6 +175,9 @@ def post_comment_like(request, comment_id):
     try:
         user_id = int(request.session['user_id'])
         comment_id = int(comment_id)
+
+        need_to_push = False
+
         comment = Comments.objects.get(id=comment_id)
         comment_likes = [user.id for user in comment.likes.only('id')]
         if user_id in comment_likes:
@@ -182,9 +185,13 @@ def post_comment_like(request, comment_id):
         else:
             comment.likes.add(user_id)
 
+        if comment.max_like < len(comment_likes):
+            comment.max_like = len(comment_likes)
+            need_to_push = True
+
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
-        if user_id != comment.author_id:
+        if need_to_push and user_id != comment.author_id:
             send_push_message([comment.author.pk], push_type=PUSH_LIKE_COMMENT, thread_id=comment.thread_id, comment_id=comment_id)
 
     except Exception as err:

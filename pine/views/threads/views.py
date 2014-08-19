@@ -251,6 +251,8 @@ def post_thread_like(request, thread_id):
         user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
 
+        need_to_push = False
+
         # update db
         thread = Threads.objects.get(id=int(thread_id))
         thread_likes = [user.id for user in thread.likes.only('id')]
@@ -258,9 +260,14 @@ def post_thread_like(request, thread_id):
             response_data[Protocol.MESSAGE] = 'Warn: User has already liked'
         else:
             thread.likes.add(user)
+
+        if thread.max_like < len(thread_likes):
+            thread.max_like = len(thread_likes)
+            need_to_push = True
+
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
-        if user_id != thread.author_id:
+        if need_to_push and user_id != thread.author_id:
             send_push_message([thread.author.pk], push_type=PUSH_LIKE_THREAD, thread_id=thread_id)
 
     except Exception as err:

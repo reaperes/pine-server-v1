@@ -8,6 +8,7 @@ class Comments(models.Model):
     author = models.ForeignKey(Users)
     thread = models.ForeignKey(Threads)
     likes = models.ManyToManyField(Users, related_name='likeComments')
+    max_like = models.IntegerField(default=0)
     reports = models.ManyToManyField(Users, related_name='reportComments')
     pub_date = models.DateTimeField()
     content = models.CharField(max_length=500)
