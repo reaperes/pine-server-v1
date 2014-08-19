@@ -13,13 +13,13 @@ PUSH_LIKE_COMMENT = 21
 
 
 def send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None, summary=None):
-    if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
+    # if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
         # below code for test
-        # _send_push_message(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id, summary=summary)
-        pass
-    else:
-        PushThread(user_ids=user_ids, push_type=push_type,
-                   thread_id=thread_id, comment_id=comment_id, summary=summary).start()
+        _send_push_message(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id, summary=summary)
+        # pass
+    # else:
+    #     PushThread(user_ids=user_ids, push_type=push_type,
+    #                thread_id=thread_id, comment_id=comment_id, summary=summary).start()
 
 
 class PushThread(Thread):
@@ -38,6 +38,8 @@ class PushThread(Thread):
 
 """ push message protocol
 
+    ANDROID push
+
     PUSH_NEW_THREAD = 10
     PUSH_NEW_COMMENT = 11
 
@@ -52,6 +54,15 @@ class PushThread(Thread):
         'summary':
     }
 
+    IOS push
+
+    'aps': {
+        'alert': (message, String),
+        'badge': 1,
+    },
+    'thread_id': (int),         # PUSH_NEW_THREAD : no need, 나머지 전부 줄것
+
+
 """
 
 
@@ -61,6 +72,8 @@ def _send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None
         user = Users.objects.get(pk=user_id)
         if user.device == 'android':
             registration_ids.append(user.push_id)
+        if user.device == 'ios':
+            _send_push_message_ios(user.push_id, push_type=push_type, thread_id=thread_id)
 
     message = ''
     if push_type == PUSH_NEW_THREAD:
@@ -91,3 +104,30 @@ def _send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None
 
     if response.status_code != 200:
         print(response.text)
+
+
+def _send_push_message_ios(push_id, push_type=None, thread_id=None):
+    message = ''
+    if push_type == PUSH_NEW_THREAD:
+        message = '당신의 친구가 새로운 글을 남겼습니다'
+    elif push_type == PUSH_NEW_COMMENT:
+        message = '누군가가 당신의 글에 댓글을 달았습니다'
+    elif push_type == PUSH_LIKE_THREAD:
+        message = '누군가가 당신의 글에 하트를 달았습니다 ♥'
+    elif push_type == PUSH_LIKE_COMMENT:
+        message = '누군가 당신의 댓글에 하트를 달았습니다 ♥'
+
+    req = {
+        'token': push_id,
+        'alert_body': message,
+    }
+
+    if thread_id is not None:
+        req['thread_id'] = int(thread_id)
+
+    if push_type == PUSH_NEW_THREAD:
+        del req['thread_id']
+
+    # response = requests.post('http://125.209.194.90:8000/push/apns', data=json.dumps(req))
+    response = requests.post('http://0.0.0.0:8888/push/apns', data=json.dumps(req))
+    print(response)
