@@ -1,5 +1,6 @@
 import json
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST, require_GET
@@ -69,7 +70,6 @@ response:
 
 """
 
-# todo : need to more human readable
 @login_required
 @require_POST
 def post_friends_create(request):
@@ -77,7 +77,6 @@ def post_friends_create(request):
         Protocol.RESULT: Protocol.FAIL,
         Protocol.MESSAGE: ''
     }
-
     try:
         req_json = json.loads(request.body.decode('utf-8'))
         user_id = int(request.session['user_id'])
@@ -86,11 +85,15 @@ def post_friends_create(request):
         user = Users.objects.get(id=user_id)
         from pine.service import friendship
         for target_phone_number in phone_numbers:
-            friendship.create_friendship(user, target_phone_number)
+            try:
+                friendship.create_friendship(user, target_phone_number)
+            except IntegrityError as err:
+                pass
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
+        print(str(err))
         response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')

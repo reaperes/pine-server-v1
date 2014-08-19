@@ -12,6 +12,7 @@ from django.views.decorators.http import require_http_methods, require_GET, requ
 from pine.models import Threads, Users
 from pine.pine import Protocol
 from pine.util import fileutil
+from pine.service.push import send_push_message, PUSH_NEW_THREAD, PUSH_LIKE_THREAD
 
 
 """ post thread json protocol
@@ -86,12 +87,18 @@ def post_thread(request):
                                             content=req_json['content'])
 
         thread.readers.add(user.id)
-        thread.readers.add(*[user.id for user in user.friends.only('pk')])
+        readers = [user.id for user in user.friends.only('pk')]
+        thread.readers.add(*readers)
 
         response_data = {
             Protocol.RESULT: Protocol.SUCCESS,
             Protocol.MESSAGE: ''
         }
+
+        summary = req_json['content'][:17]
+        if len(req_json['content']) > 17:
+            summary += '...'
+        send_push_message(readers, push_type=PUSH_NEW_THREAD, thread_id=thread.pk, summary=summary)
 
     # if malformed protocol
     except Exception as err:
@@ -137,21 +144,24 @@ def get_thread(request, thread_id):
 
     try:
         thread_id = int(thread_id)
-        user_id = request.session['user_id']
+        user_id = int(request.session['user_id'])
 
         thread = Threads.objects.get(id=thread_id)
-
-        likes = [user.id for user in thread.likes.only('id')]
-        response_data[Protocol.DATA] = {
-            'id': thread.id,
-            'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
-            'like_count': len(likes),
-            'liked': user_id in likes,
-            'image_url': thread.image_url,
-            'content': thread.content,
-            'comment': len(thread.comments_set.all())
-        }
-        response_data[Protocol.RESULT] = Protocol.SUCCESS
+        readers = [user.id for user in thread.readers.only('id')]
+        if user_id in readers:
+            likes = [user.id for user in thread.likes.only('id')]
+            response_data[Protocol.DATA] = {
+                'id': thread.id,
+                'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
+                'like_count': len(likes),
+                'liked': user_id in likes,
+                'image_url': thread.image_url,
+                'content': thread.content,
+                'comment': len(thread.comments_set.all())
+            }
+            response_data[Protocol.RESULT] = Protocol.SUCCESS
+        else:
+            response_data[Protocol.MESSAGE] = 'Err: You have no permission on thread.'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
@@ -237,17 +247,31 @@ def post_thread_like(request, thread_id):
         Protocol.MESSAGE: ''
     }
 
-    user_id = request.session['user_id']
+    try:
+        user_id = int(request.session['user_id'])
+        user = Users.objects.get(id=user_id)
 
-    # update db
-    thread = Threads.objects.get(id=int(thread_id))
-    thread_likes = [user.id for user in thread.likes.only('id')]
-    if user_id in thread_likes:
-        response_data[Protocol.MESSAGE] = 'Warn: User has already liked'
-    else:
-        thread.likes.add(user_id)
+        need_to_push = False
 
-    response_data[Protocol.RESULT] = Protocol.SUCCESS
+        # update db
+        thread = Threads.objects.get(id=int(thread_id))
+        thread_likes = [user.id for user in thread.likes.only('id')]
+        if user_id in thread_likes:
+            response_data[Protocol.MESSAGE] = 'Warn: User has already liked'
+        else:
+            thread.likes.add(user)
+
+        if thread.max_like < len(thread_likes):
+            thread.max_like = len(thread_likes)
+            need_to_push = True
+
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+        if need_to_push and user_id != thread.author_id:
+            send_push_message([thread.author.pk], push_type=PUSH_LIKE_THREAD, thread_id=thread_id)
+
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
 
@@ -319,16 +343,18 @@ def post_report_thread(request, thread_id):
     }
 
     try:
-        user_id = request.session['user_id']
+        user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
 
         report_thread_id = int(thread_id)
-
         report_thread = Threads.objects.get(id=report_thread_id)
-        report_thread.reports.add(user)
-        report_thread.readers.remove(user)
 
-        response_data[Protocol.RESULT] = Protocol.SUCCESS
+        if user_id != report_thread.author_id:
+            report_thread.reports.add(user)
+            report_thread.readers.remove(user)
+            response_data[Protocol.RESULT] = Protocol.SUCCESS
+        else:
+            response_data[Protocol.MESSAGE] = 'Warn: Cannot report yourself.'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
@@ -366,21 +392,25 @@ def post_block_thread(request, thread_id):
         user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
 
-        if block_thread.author in user.blocks.only('id'):
-            response_data = {
-                Protocol.RESULT: Protocol.SUCCESS,
-                Protocol.MESSAGE: 'Warn: User already blocked.'
-            }
+        if user_id != block_user.pk:
+            if block_thread.author in user.blocks.only('id'):
+                response_data = {
+                    Protocol.RESULT: Protocol.SUCCESS,
+                    Protocol.MESSAGE: 'Warn: User already blocked.'
+                }
+            else:
+                user.blocks.add(block_user)
+                user.friends.remove(block_user)
+                block_user.friends.remove(user)
 
+                block_thread.readers.remove(user)
+
+                response_data = {
+                    Protocol.RESULT: Protocol.SUCCESS,
+                    Protocol.MESSAGE: ''
+                }
         else:
-            user.blocks.add(block_user)
-            user.friends.remove(block_user)
-            block_user.friends.remove(user)
-
-            response_data = {
-                Protocol.RESULT: Protocol.SUCCESS,
-                Protocol.MESSAGE: ''
-            }
+            response_data[Protocol.MESSAGE] = 'Warn: Cannot block yourself'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

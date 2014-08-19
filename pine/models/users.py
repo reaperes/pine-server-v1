@@ -11,6 +11,8 @@ class Users(models.Model):
     friends = models.ManyToManyField('self', symmetrical=True)
     followings = models.ManyToManyField('self', symmetrical=False, related_name='followers')
     blocks = models.ManyToManyField('self', symmetrical=False, related_name='blocked')
+    device = models.CharField(max_length=10, default='none')
+    push_id = models.CharField(max_length=255, null=True)
 
     class Meta:
         app_label = 'pine'
@@ -22,4 +24,5 @@ class Users(models.Model):
                 + ', friends: [' + ' '.join(str(n) for n in [user.id for user in self.friends.only('id')])
                 + '], followings: [' + ' '.join(str(n) for n in [user.id for user in self.followings.only('id')])
                 + '], blocks: [' + ' '.join(str(n) for n in [user.id for user in self.blocks.only('id')])
-                + ']')
+                + '], device: ' + str(self.device)
+                + ' push_id: ' + str(self.push_id))

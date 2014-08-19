@@ -8,6 +8,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from pine.models import Threads, Users, Comments
 from pine.pine import Protocol
+from pine.service.push import send_push_message, PUSH_NEW_COMMENT, PUSH_LIKE_COMMENT
 
 
 @login_required
@@ -73,9 +74,7 @@ def get_comments(request, thread_id):
             if comment.author_id == thread.author_id:
                 comment_type |= (1 << 1)
 
-            if comment.author_id in virtual_id:
-                virtual_id[comment.author_id] += 1
-            else:
+            if comment.author_id not in virtual_id:
                 virtual_id[comment.author_id] = virtual_id_index
                 virtual_id_index += 1
 
@@ -138,6 +137,13 @@ def post_comment(request, thread_id):
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
+        if user_id != thread.author_id:
+            summary = content[:17]
+            if len(content) > 17:
+                summary += '...'
+
+            send_push_message([thread.author.pk], push_type=PUSH_NEW_COMMENT, thread_id=thread_id, summary=summary)
+
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
 
@@ -171,6 +177,9 @@ def post_comment_like(request, comment_id):
     try:
         user_id = int(request.session['user_id'])
         comment_id = int(comment_id)
+
+        need_to_push = False
+
         comment = Comments.objects.get(id=comment_id)
         comment_likes = [user.id for user in comment.likes.only('id')]
         if user_id in comment_likes:
@@ -178,7 +187,14 @@ def post_comment_like(request, comment_id):
         else:
             comment.likes.add(user_id)
 
+        if comment.max_like < len(comment_likes):
+            comment.max_like = len(comment_likes)
+            need_to_push = True
+
         response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+        if need_to_push and user_id != comment.author_id:
+            send_push_message([comment.author.pk], push_type=PUSH_LIKE_COMMENT, thread_id=comment.thread_id, comment_id=comment_id)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
@@ -256,11 +272,13 @@ def post_comment_report(request, comment_id):
         user = Users.objects.get(id=user_id)
 
         report_comment_id = int(comment_id)
-
         report_comment = Threads.objects.get(id=report_comment_id)
-        report_comment.reports.add(user)
 
-        response_data[Protocol.RESULT] = Protocol.SUCCESS
+        if user_id != report_comment.author_id:
+            report_comment.reports.add(user)
+            response_data[Protocol.RESULT] = Protocol.SUCCESS
+        else:
+            response_data[Protocol.MESSAGE] = 'Warn: Cannot report yourself'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
@@ -299,12 +317,15 @@ def post_comment_block(request, comment_id):
         block_comment = Comments.objects.get(id=comment_id)
         block_user = block_comment.author
 
-        if block_user not in user.blocks.only('id'):
-            user.blocks.add(block_user)
-            user.friends.remove(block_user)
-            block_user.friends.remove(user)
+        if user_id != block_user.pk:
+            if block_user not in user.blocks.only('id'):
+                user.blocks.add(block_user)
+                user.friends.remove(block_user)
+                block_user.friends.remove(user)
 
-            response_data[Protocol.RESULT] = Protocol.SUCCESS
+                response_data[Protocol.RESULT] = Protocol.SUCCESS
+        else:
+            response_data[Protocol.MESSAGE] = 'Warn: Cannot block yourself'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

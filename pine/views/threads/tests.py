@@ -54,7 +54,7 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
             }
             response = self.client.post(URL, j).content.decode('utf-8')
             response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.RESULT] == Protocol.SUCCESS, response
 
     def test_post_friends_thread_no_image(self):
         process_session(self.client, user_id=2)
@@ -108,6 +108,13 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
+    def test_post_report_thread_myself(self):
+        process_session(self.client, user_id=1)
+        response = self.client.post(URL+'/1/report',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.FAIL, response
+
     def test_block_thread(self):
         process_session(self.client, user_id=1)
         response = self.client.post(URL+'/5/block',
@@ -115,12 +122,54 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS, response[Protocol.MESSAGE]
 
+    def test_block_thread_myself(self):
+        process_session(self.client, user_id=1)
+        response = self.client.post(URL+'/1/block',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.FAIL, response[Protocol.MESSAGE]
+
 
 class IntegrationThreadTestCase(TestCase, LoadFixtures):
     def setUp(self):
-        pass
+        self.client = Client()
+
+    def test_get_thread_after_report_thread(self):
+        # report thread
+        process_session(self.client, user_id=2)
+        response = self.client.post(URL+'/1/block',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # get thread
+        response = self.client.get(URL+'/1', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.FAIL
 
 
 class ReportedBugTestCase(TestCase, LoadFixtures):
     def setUp(self):
+        self.client = Client()
         pass
+
+    def test_like_unlike_like_crash(self):
+        process_session(self.client, user_id=3)
+
+        # like 8 thread
+        response = self.client.post('/threads/8/like',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # unlike thread
+        response = self.client.post('/threads/8/unlike',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # like thread
+        response = self.client.post('/threads/8/like',
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS

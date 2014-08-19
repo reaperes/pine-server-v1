@@ -6,6 +6,7 @@
       "author": 1,
       "thread": 1,
       "likes": [1, 2, 3],
+      "max_like": 0,
       "reports": [4],
       "pub_date": "2014-06-01T00:00:01+00:00",
       "content": "Namhoon's first comment."
@@ -18,6 +19,7 @@
       "author": 8,
       "thread": 1,
       "likes": [],
+      "max_like": 0,
       "reports": [],
       "pub_date": "2014-06-01T00:00:02+00:00",
       "content": "랄랄라 ^-^"
@@ -30,6 +32,7 @@
       "author": 4,
       "thread": 1,
       "likes": [],
+      "max_like": 0,
       "reports": [],
       "pub_date": "2014-06-01T00:00:03+00:00",
       "content": "hello"
@@ -42,6 +45,7 @@
       "author": 1,
       "thread": 8,
       "likes": [],
+      "max_like": 0,
       "reports": [],
       "pub_date": "2014-06-19T17:45:39+00:00",
       "content": "comment"

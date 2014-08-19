@@ -8,6 +8,7 @@ class Threads(models.Model):
     is_public = models.BooleanField()
     readers = models.ManyToManyField(Users, related_name='readable')
     likes = models.ManyToManyField(Users, related_name='likeThreads')
+    max_like = models.IntegerField(default=0)
     reports = models.ManyToManyField(Users, related_name='reportThreads')
     pub_date = models.DateTimeField()
     image_url = models.CharField(max_length=256, default='')

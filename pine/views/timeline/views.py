@@ -51,7 +51,7 @@ def get_latest_friend_timeline(request):
     }
 
     try:
-        user_id = request.session['user_id']
+        user_id = int(request.session['user_id'])
         count = int(request.GET.get('count'))
 
         threads = Threads.objects.filter(readers__id=user_id, is_public=False)[0:count]
