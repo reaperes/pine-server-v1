@@ -80,3 +80,18 @@ class UnitTestCase(TestCase, LoadFixtures):
                                     }), content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS, response
+
+
+class ReportedTestCase(TestCase, LoadFixtures):
+    def setUp(self):
+        self.client = Client()
+
+    def test_register_user_who_already_added_phone_list(self):
+        response = self.client.post('/users/register',
+                                    data=json.dumps({
+                                        'username': '01085174557',
+                                        'password': '01085174557'
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS

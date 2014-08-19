@@ -101,6 +101,8 @@ def post_register(request):
         phone = Phones.objects.filter(phone_number=username)
         if phone.exists() is False:
             phone = Phones.objects.create(phone_number=username)
+        else:
+            phone = phone[0]
 
         Users.objects.create(account=account, phone=phone)
         response_data[Protocol.RESULT] = Protocol.SUCCESS
