@@ -21,6 +21,7 @@ class Comments(models.Model):
         return ('pk: ' + str(self.pk)
                 + ', author: ' + str(self.author.id)
                 + ', likes: [' + ' '.join(str(n) for n in [user.id for user in self.likes.only('id')])
-                + '], reports: [' + ' '.join(str(n) for n in [user.id for user in self.reports.only('id')])
+                + '], max_like: ' + str(self.max_like)
+                + ', reports: [' + ' '.join(str(n) for n in [user.id for user in self.reports.only('id')])
                 + '], pub_date: ' + str(self.pub_date)
                 + ', content: ' + self.content)

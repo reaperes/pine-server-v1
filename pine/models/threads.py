@@ -24,7 +24,8 @@ class Threads(models.Model):
                 + ', is_public:' + str(self.is_public)
                 + ', readers: [' + ' '.join(str(n) for n in [user.id for user in self.readers.only('id')])
                 + '], likes: [' + ' '.join(str(n) for n in [user.id for user in self.likes.only('id')])
-                + '], reports: [' + ' '.join(str(n) for n in [user.id for user in self.reports.only('id')])
+                + '], max_like: ' + str(self.max_like)
+                + ', reports: [' + ' '.join(str(n) for n in [user.id for user in self.reports.only('id')])
                 + '], pub_date: ' + str(self.pub_date)
                 + ', image_url: ' + self.image_url
                 + ', content: ' + self.content)

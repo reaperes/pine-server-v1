@@ -189,6 +189,7 @@ def post_comment_like(request, comment_id):
             comment.max_like = len(comment_likes)
             need_to_push = True
 
+        comment.save()
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
         if need_to_push and user_id != comment.author_id:

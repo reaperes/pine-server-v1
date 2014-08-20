@@ -270,10 +270,11 @@ def post_thread_like(request, thread_id):
         if thread.max_like < len(thread_likes):
             thread.max_like = len(thread_likes)
             need_to_push = True
-
+        thread.save()
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
         if need_to_push and user_id != thread.author_id:
+            print('Push')
             send_push_message([thread.author.pk], push_type=PUSH_LIKE_THREAD, thread_id=thread_id)
 
     except Exception as err:
