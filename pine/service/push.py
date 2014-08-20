@@ -107,6 +107,9 @@ def _send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None
 
 
 def _send_push_message_ios(push_id, push_type=None, thread_id=None):
+    if push_id == 'NOALARM':
+        return
+
     message = ''
     if push_type == PUSH_NEW_THREAD:
         message = '당신의 친구가 새로운 글을 남겼습니다'
