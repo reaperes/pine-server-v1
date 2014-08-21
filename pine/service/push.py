@@ -3,6 +3,8 @@ import json
 from threading import Thread
 import requests
 
+from django.utils import timezone
+
 from pine.models.users import Users
 
 PUSH_NEW_THREAD = 10
@@ -61,7 +63,7 @@ class PushThread(Thread):
         'badge': 1,
     },
     'thread_id': (int),         # PUSH_NEW_THREAD : no need, 나머지 전부 줄것
-
+    'event_date': 'YYYY-mm-dd HH:MM:SS'
 
 """
 
@@ -123,6 +125,7 @@ def _send_push_message_ios(push_id, push_type=None, thread_id=None):
     req = {
         'token': push_id,
         'alert_body': message,
+        'event_date': timezone.localtime(timezone.now()).strftime(r'%Y-%m-%d %H:%M:%S')
     }
 
     if thread_id is not None:
