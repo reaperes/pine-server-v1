@@ -12,3 +12,11 @@ Update
     
 Bug fixed
   : thread, comment notification error
+  
+  
+apples
+  : Good for making applesauce.
+oranges
+  : Citrus!
+tomatoes
+  : There's no "e" in tomatoe.
