@@ -142,7 +142,8 @@ def post_comment(request, thread_id):
             if len(content) > 17:
                 summary += '...'
 
-            send_push_message([thread.author.pk], push_type=PUSH_NEW_COMMENT, thread_id=thread_id, summary=summary)
+            send_push_message([thread.author.pk], push_type=PUSH_NEW_COMMENT, thread_id=thread_id,
+                              summary=summary, image_url=thread.image_url)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
@@ -186,15 +187,18 @@ def post_comment_like(request, comment_id):
             response_data[Protocol.MESSAGE] = 'Warn: User has already liked'
         else:
             comment.likes.add(user_id)
+            comment_likes.append(user_id)
 
         if comment.max_like < len(comment_likes):
             comment.max_like = len(comment_likes)
             need_to_push = True
 
+        comment.save()
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
         if need_to_push and user_id != comment.author_id:
-            send_push_message([comment.author.pk], push_type=PUSH_LIKE_COMMENT, thread_id=comment.thread_id, comment_id=comment_id)
+            send_push_message([comment.author.pk], push_type=PUSH_LIKE_COMMENT, thread_id=comment.thread_id,
+                              comment_id=comment_id, image_url=comment.thread.image_url)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

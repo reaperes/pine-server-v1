@@ -87,7 +87,13 @@ def post_thread(request):
                                             content=req_json['content'])
 
         thread.readers.add(user.id)
-        readers = [user.id for user in user.friends.only('pk')]
+
+        readers = []
+        for friend in user.friends.only('pk', 'friend_phones'):
+            friend_phones = [phone.id for phone in friend.friend_phones.only('pk')]
+            if len(friend_phones) >= 4:
+                readers.append(friend.pk)
+
         thread.readers.add(*readers)
 
         response_data = {
@@ -98,7 +104,9 @@ def post_thread(request):
         summary = req_json['content'][:17]
         if len(req_json['content']) > 17:
             summary += '...'
-        send_push_message(readers, push_type=PUSH_NEW_THREAD, thread_id=thread.pk, summary=summary)
+
+        send_push_message(readers, push_type=PUSH_NEW_THREAD, thread_id=thread.pk, summary=summary,
+                          image_url=thread.image_url)
 
     # if malformed protocol
     except Exception as err:
@@ -260,15 +268,18 @@ def post_thread_like(request, thread_id):
             response_data[Protocol.MESSAGE] = 'Warn: User has already liked'
         else:
             thread.likes.add(user)
+            thread_likes.append(user.id)
 
         if thread.max_like < len(thread_likes):
             thread.max_like = len(thread_likes)
             need_to_push = True
 
+        thread.save()
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
         if need_to_push and user_id != thread.author_id:
-            send_push_message([thread.author.pk], push_type=PUSH_LIKE_THREAD, thread_id=thread_id)
+            send_push_message([thread.author.pk], push_type=PUSH_LIKE_THREAD, thread_id=thread_id,
+                              image_url=thread.image_url)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
