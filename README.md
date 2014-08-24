@@ -8,10 +8,10 @@ v 1.0.1 latest version update.
   * add `image_url` key in ios push json.
   
         "aps": {
-            'alert': (message, String),
-            'badge': 1,
+            "alert": (message, String),
+            "badge": 1,
         },
-        'thread_id': (int), # PUSH_NEW_THREAD : no need, 나머지 전부 줌
+        'thread_id': (int),
         'event_date': 'YYYY-mm-dd HH:MM:SS',
         'image_url': (String)
 

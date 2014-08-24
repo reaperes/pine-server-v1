@@ -15,13 +15,14 @@ PUSH_LIKE_COMMENT = 21
 
 
 def send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None, summary=None, image_url=None):
-    if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
+    # if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
         # below code for test
-        # _send_push_message(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id, summary=summary)
-        pass
-    else:
-        PushThread(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id,
-                   summary=summary, image_url=image_url).start()
+        _send_push_message(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id,
+                           summary=summary, image_url=image_url)
+        # pass
+    # else:
+    #     PushThread(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id,
+    #                summary=summary, image_url=image_url).start()
 
 
 class PushThread(Thread):
@@ -63,7 +64,7 @@ class PushThread(Thread):
         'alert': (message, String),
         'badge': 1,
     },
-    'thread_id': (int),         # PUSH_NEW_THREAD : no need, 나머지 전부 줄것
+    'thread_id': (int),
     'event_date': 'YYYY-mm-dd HH:MM:SS',
     'image_url': (String)
 
@@ -133,8 +134,5 @@ def _send_push_message_ios(push_id, push_type=None, thread_id=None, image_url=No
 
     if thread_id is not None:
         req['thread_id'] = int(thread_id)
-
-    if push_type == PUSH_NEW_THREAD:
-        del req['thread_id']
 
     response = requests.post('http://125.209.194.90:8000/push/apns', data=json.dumps(req))
