@@ -104,7 +104,9 @@ def post_thread(request):
         summary = req_json['content'][:17]
         if len(req_json['content']) > 17:
             summary += '...'
-        send_push_message(readers, push_type=PUSH_NEW_THREAD, thread_id=thread.pk, summary=summary)
+
+        send_push_message(readers, push_type=PUSH_NEW_THREAD, thread_id=thread.pk, summary=summary,
+                          image_url=thread.image_url)
 
     # if malformed protocol
     except Exception as err:
@@ -276,7 +278,8 @@ def post_thread_like(request, thread_id):
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
         if need_to_push and user_id != thread.author_id:
-            send_push_message([thread.author.pk], push_type=PUSH_LIKE_THREAD, thread_id=thread_id)
+            send_push_message([thread.author.pk], push_type=PUSH_LIKE_THREAD, thread_id=thread_id,
+                              image_url=thread.image_url)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

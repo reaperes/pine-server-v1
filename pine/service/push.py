@@ -14,28 +14,29 @@ PUSH_LIKE_THREAD = 20
 PUSH_LIKE_COMMENT = 21
 
 
-def send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None, summary=None):
+def send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None, summary=None, image_url=None):
     if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
         # below code for test
         # _send_push_message(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id, summary=summary)
         pass
     else:
-        PushThread(user_ids=user_ids, push_type=push_type,
-                   thread_id=thread_id, comment_id=comment_id, summary=summary).start()
+        PushThread(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id,
+                   summary=summary, image_url=image_url).start()
 
 
 class PushThread(Thread):
-    def __init__(self, user_ids=None, push_type=None, thread_id=None, comment_id=None, summary=None):
+    def __init__(self, user_ids=None, push_type=None, thread_id=None, comment_id=None, summary=None, image_url=None):
         super().__init__()
         self.user_ids = user_ids
         self.push_type = push_type
         self.thread_id = thread_id
         self.comment_id = comment_id
         self.summary = summary
+        self.image_url = image_url
 
     def run(self):
         _send_push_message(user_ids=self.user_ids, push_type=self.push_type, thread_id=self.thread_id,
-                           comment_id=self.comment_id, summary=self.summary)
+                           comment_id=self.comment_id, summary=self.summary, image_url=self.image_url)
 
 
 """ push message protocol
@@ -63,19 +64,20 @@ class PushThread(Thread):
         'badge': 1,
     },
     'thread_id': (int),         # PUSH_NEW_THREAD : no need, 나머지 전부 줄것
-    'event_date': 'YYYY-mm-dd HH:MM:SS'
+    'event_date': 'YYYY-mm-dd HH:MM:SS',
+    'image_url': (String)
 
 """
 
 
-def _send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None, summary=None):
+def _send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None, summary=None, image_url=None):
     registration_ids = []
     for user_id in user_ids:
         user = Users.objects.get(pk=user_id)
         if user.device == 'android':
             registration_ids.append(user.push_id)
         if user.device == 'ios':
-            _send_push_message_ios(user.push_id, push_type=push_type, thread_id=thread_id)
+            _send_push_message_ios(user.push_id, push_type=push_type, thread_id=thread_id, image_url=image_url)
 
     message = ''
     if push_type == PUSH_NEW_THREAD:
@@ -108,7 +110,7 @@ def _send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None
         print(response.text)
 
 
-def _send_push_message_ios(push_id, push_type=None, thread_id=None):
+def _send_push_message_ios(push_id, push_type=None, thread_id=None, image_url=None):
     if push_id == 'NOALARM':
         return
 
@@ -125,7 +127,8 @@ def _send_push_message_ios(push_id, push_type=None, thread_id=None):
     req = {
         'token': push_id,
         'alert_body': message,
-        'event_date': timezone.localtime(timezone.now()).strftime(r'%Y-%m-%d %H:%M:%S')
+        'event_date': timezone.localtime(timezone.now()).strftime(r'%Y-%m-%d %H:%M:%S'),
+        'image_url': image_url
     }
 
     if thread_id is not None:
