@@ -25,15 +25,16 @@ def create_friendship(user, target_phone_number):
 
     # check for performance.
     # If target is no pine user it return
-    target_user_query = Users.objects.filter(id=target_phone.id)
+    target_user_query = Users.objects.filter(phone=target_phone.id)
     target_user = None
+
     if target_user_query.exists():
-        target_user = Users.objects.get(id=target_phone.id)
+        target_user = target_user_query[0]
     else:
         return
 
     # configure friends, following
-    has_user_target_phone = target_user.friend_phones.filter(id=user.id).exists()
+    has_user_target_phone = target_user.friend_phones.filter(id=user.phone.id).exists()
     if has_user_target_phone:
         user.friends.add(target_user)
     else:
