@@ -184,6 +184,7 @@ def post_comment_like(request, comment_id):
             response_data[Protocol.MESSAGE] = 'Warn: User has already liked'
         else:
             comment.likes.add(user_id)
+            comment_likes.append(user_id)
 
         if comment.max_like < len(comment_likes):
             comment.max_like = len(comment_likes)

@@ -266,15 +266,16 @@ def post_thread_like(request, thread_id):
             response_data[Protocol.MESSAGE] = 'Warn: User has already liked'
         else:
             thread.likes.add(user)
+            thread_likes.append(user.id)
 
         if thread.max_like < len(thread_likes):
             thread.max_like = len(thread_likes)
             need_to_push = True
+
         thread.save()
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
         if need_to_push and user_id != thread.author_id:
-            print('Push')
             send_push_message([thread.author.pk], push_type=PUSH_LIKE_THREAD, thread_id=thread_id)
 
     except Exception as err:
