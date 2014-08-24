@@ -19,7 +19,7 @@ class Users(models.Model):
 
     def __str__(self):
         return ('pk: ' + str(self.pk)
-                + ', phone: ' + self.phone.phone_number
+                + ', phone: ' + str(self.phone.id)
                 + ', friend_phones: ' + ' '.join(str(n) for n in [phone.id for phone in self.friend_phones.only('id')])
                 + ', friends: [' + ' '.join(str(n) for n in [user.id for user in self.friends.only('id')])
                 + '], followings: [' + ' '.join(str(n) for n in [user.id for user in self.followings.only('id')])
