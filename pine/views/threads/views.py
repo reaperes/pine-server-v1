@@ -132,6 +132,7 @@ response:
         data:       (Array)
         {
             id:           (Number, Threads.id),
+            type:         (Number, 0-none 1-author),
             like_count:   (Number, how many users like),
             liked:        (Boolean, if user like or not),
             pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
@@ -156,10 +157,15 @@ def get_thread(request, thread_id):
 
         thread = Threads.objects.get(id=thread_id)
         readers = [user.id for user in thread.readers.only('id')]
+
         if user_id in readers:
+            thread_type = 0
+            if user_id == thread.author_id:
+                thread_type = 1
             likes = [user.id for user in thread.likes.only('id')]
             response_data[Protocol.DATA] = {
                 'id': thread.id,
+                'type': thread_type,
                 'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
                 'like_count': len(likes),
                 'liked': user_id in likes,

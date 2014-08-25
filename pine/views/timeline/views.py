@@ -25,6 +25,7 @@ response:
         [
             {
                 id:           (Number, Threads.id),
+                type:         (Number, 0-none 1-author),
                 like_count:   (Number, how many users like),
                 liked:        (Boolean, if user like or not),
                 pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
@@ -57,10 +58,14 @@ def get_latest_friend_timeline(request):
         threads = Threads.objects.filter(readers__id=user_id, is_public=False)[0:count]
 
         for thread in threads:
+            thread_type = 0
+            if user_id == thread.author_id:
+                thread_type = 1
             likes = [user.id for user in thread.likes.only('id')]
 
             response_data[Protocol.DATA].append({
                 'id': thread.id,
+                'type': thread_type,
                 'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
                 'like_count': len(likes),
                 'liked': user_id in likes,
@@ -93,6 +98,7 @@ response:
         [
             {
                 id:           (Number, Threads.id),
+                type:         (Number, 0-none 1-author),
                 like_count:   (Number, how many users like),
                 liked:        (Boolean, if user like or not),
                 pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
@@ -119,7 +125,7 @@ def get_friend_timeline_since_offset(request):
     }
 
     try:
-        user_id = request.session['user_id']
+        user_id = int(request.session['user_id'])
         count = int(request.GET.get('count'))
         offset_id = int(request.GET.get('offset_id'))
 
@@ -130,10 +136,14 @@ def get_friend_timeline_since_offset(request):
                    .reverse()[:count])
 
         for thread in threads:
+            thread_type = 0
+            if user_id == thread.author_id:
+                thread_type = 1
             likes = [user.id for user in thread.likes.only('id')]
 
             response_data[Protocol.DATA].append({
                 'id': thread.id,
+                'type': thread_type,
                 'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
                 'like_count': len(likes),
                 'liked': user_id in likes,
@@ -192,7 +202,7 @@ def get_friend_timeline_previous_offset(request):
     }
 
     try:
-        user_id = request.session['user_id']
+        user_id = int(request.session['user_id'])
         count = int(request.GET.get('count'))
         offset_id = int(request.GET.get('offset_id'))
 
@@ -202,10 +212,14 @@ def get_friend_timeline_previous_offset(request):
                    .filter(readers__id=user_id, is_public=False, pub_date__lt=offset_datetime)[:count])
 
         for thread in threads:
+            thread_type = 0
+            if user_id == thread.author_id:
+                thread_type = 1
             likes = [user.id for user in thread.likes.only('id')]
 
             response_data[Protocol.DATA].append({
                 'id': thread.id,
+                'type': thread_type,
                 'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
                 'like_count': len(likes),
                 'liked': user_id in likes,

@@ -70,6 +70,13 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA]['id'] == 1
+        assert response[Protocol.DATA]['type'] == 0     # not author
+
+        process_session(self.client, user_id=1)
+        response = self.client.get(URL+'/1', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA]['type'] == 1     # author
 
     def test_get_friend_thread_offset(self):
         process_session(self.client, user_id=2)

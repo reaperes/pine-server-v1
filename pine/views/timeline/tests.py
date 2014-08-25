@@ -11,38 +11,41 @@ from pine.views.tests_support import LoadFixtures, process_session
 class UnitThreadTestCase(TestCase, LoadFixtures):
     def setUp(self):
         self.client = Client()
-        self.get_timeline_friend = {
-            'count': 2
-        }
-        self.get_timeline_friend_since_offset = {
-            'offset_id': 3,
-            'count': 2
-        }
-        self.get_timeline_friend_previous_offset = {
-            'offset_id': 5,
-            'count': 2
-        }
 
     def test_get_latest_friend_timeline(self):
         process_session(self.client, user_id=1)
-        uri = parse.urlencode(self.get_timeline_friend)
+        uri = parse.urlencode({
+            'count': 2
+        })
         response = self.client.get('/timeline/friends?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert len(response[Protocol.DATA]) == 2
+        assert response[Protocol.DATA][0]['type'] == 1  # thread is not author
+        assert response[Protocol.DATA][1]['type'] == 0  # thread is author
 
     def get_friend_timeline_since_offset(self):
         process_session(self.client, user_id=1)
-        uri = parse.urlencode(self.get_timeline_friend_since_offset)
+        uri = parse.urlencode({
+            'offset_id': 3,
+            'count': 2
+        })
         response = self.client.get('/timeline/friends/since_offset?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert len(response[Protocol.DATA]) == 2
+        assert response[Protocol.RESULT] == Protocol.SUCCESS, response
+        assert len(response[Protocol.DATA]) == 2, response
+        assert response[Protocol.DATA][0]['type'] == 0  # thread is not author
+        assert response[Protocol.DATA][1]['type'] == 1  # thread is author
 
     def get_friend_timeline_previous_offset(self):
         process_session(self.client, user_id=1)
-        uri = parse.urlencode(self.get_timeline_friend_previous_offset)
+        uri = parse.urlencode({
+            'offset_id': 5,
+            'count': 2
+        })
         response = self.client.get('/timeline/friends/previous_offset?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert len(response[Protocol.DATA]) == 2
+        assert response[Protocol.DATA][0]['type'] == 0  # thread is not author
+        assert response[Protocol.DATA][1]['type'] == 1  # thread is author
