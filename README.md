@@ -7,10 +7,10 @@ v 1.0.2 latest version update.
 **Update**
   * add `type` key in APIs.
         
-- Get latest timeline                                      [/timeline/friends?count={count}]
-- Get next threads in timeline starting from offset thread [/timeline/friends/since_offset?offset_id={offset_id}&count={count}]
-- Get friend's timeline previous offset                    [/timeline/friends/previous_offset?offset_id={offset_id}&count={count}]      
-- Get thread                                               [/threads/<thread_id>]
+        Get latest timeline                                      [/timeline/friends?count={count}]
+        Get next threads in timeline starting from offset thread [/timeline/friends/since_offset?offset_id={offset_id}&count={count}]
+        Get friend's timeline previous offset                    [/timeline/friends/previous_offset?offset_id={offset_id}&count={count}]      
+        Get thread                                               [/threads/<thread_id>]
 
 
 
