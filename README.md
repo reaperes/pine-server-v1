@@ -5,8 +5,21 @@ Version management
 v 1.0.2 latest version update.
 ------------------------------
 **Update**
-  * add `type` key in APIs.
+  * add `type` key in thread APIs.
         
+        Examples
+        {
+            id:           (Number, Threads.id),
+            type:         (Number, 0-none 1-author),
+            like_count:   (Number, how many users like),
+            liked:        (Boolean, if user like or not),
+            pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
+            image_url:    (String, image url here),
+            content:      (String, content <= 200),
+            comment:      (Number, how many comments commented)
+        },
+
+        Updated apis
         Get latest timeline                                      [/timeline/friends?count={count}]
         Get next threads in timeline starting from offset thread [/timeline/friends/since_offset?offset_id={offset_id}&count={count}]
         Get friend's timeline previous offset                    [/timeline/friends/previous_offset?offset_id={offset_id}&count={count}]      
