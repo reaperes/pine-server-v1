@@ -88,6 +88,16 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.FAIL
 
+    def test_post_comment(self):
+        c = Client()
+        process_session(c, user_id=1)
+        response = c.post('/threads/3/comments',
+                data=json.dumps({
+                   'content':'for ttt'
+                }),
+                content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS, response
 
 class IntegrationThreadTestCase(TestCase, LoadFixtures):
     def test_get_thread_comment_after_post_thread_comment(self):

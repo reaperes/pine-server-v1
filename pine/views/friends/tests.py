@@ -23,7 +23,7 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
             'phone_numbers': ['01098590530']
         }
         self.post_friends_destroy_pine_user2 = {
-            'phone_numbers': ['01040099179']
+            'phone_numbers': ['01040099179', '01087537711', '01098590530']
         }
 
     def test_get_friends_list(self):
@@ -78,6 +78,13 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
+    def test_get_friends_who_are_user(self):
+#        process_session(self.client, user_id=1)
+        response = self.client.post('/friends/get',
+                                    data=json.dumps(self.post_friends_destroy_pine_user2),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
 
 class IntegrationTestCase(TestCase, LoadFixtures):
     def setUp(self):

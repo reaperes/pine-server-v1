@@ -51,6 +51,61 @@ def get_friends_list(request):
     return HttpResponse(json.dumps(response_data), content_type='application/json')
 
 
+""" POST get friends
+
+request:
+    Content-Type: application/json;
+    {
+        phone_numbers:  (Array, Friend's phone numbers)
+        ["01012345678", ... ]
+    }
+
+
+response:
+    Content-Type: application/json;
+    {
+        result:     (String, SUCCESS or FAIL),
+        message:    (String, error message),
+    }
+
+"""
+
+
+@login_required
+@require_POST
+def post_friends_get(request):
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: ''
+    }
+    try:
+        req_json = json.loads(request.body.decode('utf-8'))
+
+        phone_numbers = req_json['phone_numbers']
+
+        friends = []
+
+        for target_phone_number in phone_numbers:
+            if Phones.objects.filter(phone_number=target_phone_number).count():
+                target_phone = Phones.objects.get(phone_number=target_phone_number)
+                if Users.objects.filter(phone=target_phone).count():
+                    friends.append(target_phone_number)
+
+        try:
+            response_data[Protocol.DATA] = friends
+
+        except IntegrityError as err:
+            pass
+
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+    except Exception as err:
+        print(str(err))
+        response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
 """ POST create friend to user
 
 request:

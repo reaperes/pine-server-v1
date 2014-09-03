@@ -2,7 +2,7 @@ import json
 
 
 class LoadFixtures:
-    fixtures = ['auth.json', 'users.json', 'threads.json', 'comments.json', 'phones.json']
+    fixtures = ['auth.json', 'auths.json', 'users.json', 'threads.json', 'comments.json', 'phones.json']
 
 
 def process_session(client, user_id=1):

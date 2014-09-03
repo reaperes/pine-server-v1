@@ -81,6 +81,44 @@ class UnitTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS, response
 
+    def test_register_auth(self):
+        protocol = {
+            'username': '01087537711',
+        }
+        c = Client()
+        response = c.post('/users/auth/request',
+                          data=json.dumps(protocol),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        print(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+    def test_register_user_ios(self):
+        protocol = {
+            'username': '01085174557',
+            'password': '01085174557',
+            'auth_num': '111111',
+            'device_type': 'ios'
+        }
+        c = Client()
+        response = c.post('/users/register',
+                          data=json.dumps(protocol),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+    def test_register_user_android(self):
+        protocol = {
+            'username': '01085174557',
+            'password': '01085174557',
+            'device_type': 'android'
+        }
+        c = Client()
+        response = c.post('/users/register',
+                          data=json.dumps(protocol),
+                          content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
 
 class ReportedTestCase(TestCase, LoadFixtures):
     def setUp(self):

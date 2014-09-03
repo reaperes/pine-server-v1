@@ -36,7 +36,7 @@ response:
                 comment_type:       (Number,
                                         0=normal,
                                         1=user's comment,
-                                        2=thread author's comment,
+                                        2=thread author's comment
                                         3=user & thread author's comment),
                 comment_user_id:    (Number, User's virtual id),
                 like_count:         (Number, how many users like),
@@ -143,6 +143,16 @@ def post_comment(request, thread_id):
 
             send_push_message([thread.author.pk], push_type=PUSH_NEW_COMMENT, thread_id=thread_id,
                               summary=summary, image_url=thread.image_url)
+
+        comments = Comments.objects.get(thread=thread_id)
+
+        writers = {}
+
+        for comment in comments:
+            writers.append(comment.author_id)
+
+        send_push_message(writers, push_type=PUSH_NEW_COMMENT, thread_id=thread_id,
+                          summary=summary, image_url=thread.image_url)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
