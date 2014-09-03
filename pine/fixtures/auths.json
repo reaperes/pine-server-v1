@@ -1,0 +1,10 @@
+[
+  {
+    "model": "pine.auths",
+    "pk": 1,
+    "fields": {
+      "phone": 10,
+      "auth_number": "111111"
+    }
+  }
+]
