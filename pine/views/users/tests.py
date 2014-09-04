@@ -1,16 +1,12 @@
 import json
 
-from django.test import TestCase
 from django.test.client import Client
 
 from pine.pine import Protocol
-from pine.views.tests_support import LoadFixtures, process_session
+from pine.views.tests_support import process_session, PineTestCase
 
 
-class UnitTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-
+class UnitTestCase(PineTestCase):
     def test_post_login(self):
         protocol = {
             'username': '01032080403',
@@ -82,10 +78,7 @@ class UnitTestCase(TestCase, LoadFixtures):
         assert response[Protocol.RESULT] == Protocol.SUCCESS, response
 
 
-class ReportedTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-
+class ReportedTestCase(PineTestCase):
     def test_register_user_who_already_added_phone_list(self):
         response = self.client.post('/users/register',
                                     data=json.dumps({

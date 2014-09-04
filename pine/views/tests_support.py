@@ -1,8 +1,14 @@
 import json
 
+from django.test import TestCase
+from django.test.client import Client
 
-class LoadFixtures:
+
+class PineTestCase(TestCase):
     fixtures = ['auth.json', 'users.json', 'threads.json', 'comments.json', 'phones.json']
+
+    def setUp(self):
+        self.client = Client()
 
 
 def process_session(client, user_id=1):

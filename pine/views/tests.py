@@ -1,17 +1,11 @@
 import json
 from urllib import parse
 
-from django.test import TestCase
-from django.test.client import Client
-
 from pine.pine import Protocol
-from pine.views.tests_support import LoadFixtures, process_session
+from pine.views.tests_support import PineTestCase, process_session
 
 
-class IntegrationTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-
+class IntegrationTestCase(PineTestCase):
     def test_lower_than_4_friends_user_cannot_read_after_other_user_post_thread(self):
         # post thread
         process_session(self.client, user_id=1)
@@ -45,10 +39,7 @@ class IntegrationTestCase(TestCase, LoadFixtures):
         assert response[Protocol.DATA][0]['content'] != 'INVALID'
 
 
-class ReportedIntegrationTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-
+class ReportedIntegrationTestCase(PineTestCase):
     def get_thread_data_after_liked(self):
         # User do like
         process_session(self.client, user_id=1)

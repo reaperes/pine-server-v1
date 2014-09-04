@@ -4,12 +4,11 @@ from django.test import TestCase
 from django.test.client import Client
 
 from pine.pine import Protocol
-from pine.views.tests_support import LoadFixtures, process_session
+from pine.views.tests_support import PineTestCase, process_session
 
 
-class UnitThreadTestCase(TestCase, LoadFixtures):
+class UnitThreadTestCase(PineTestCase):
     def setUp(self):
-        self.client = Client()
         self.post_friends_create_no_pine_user = {
             'phone_numbers': ['01088888878', '01088888788']
         }
@@ -79,10 +78,7 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
 
-class IntegrationTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-
+class IntegrationTestCase(PineTestCase):
     def test_destroy_friend_after_add_no_pine_friend(self):
         # create friendship with no pine user
         process_session(self.client, user_id=3)
@@ -116,10 +112,7 @@ class IntegrationTestCase(TestCase, LoadFixtures):
         assert before_friends_count == len(response[Protocol.DATA]) + 4
 
 
-class ReportedBugTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-
+class ReportedBugTestCase(PineTestCase):
     def user_3_add_x2_friendship_is_crashed(self):
         process_session(self.client, user_id=3)
         response = self.client.post('/friends/create',

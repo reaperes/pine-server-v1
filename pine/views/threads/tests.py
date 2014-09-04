@@ -1,18 +1,16 @@
-import re
 import json
 from urllib import parse
 
-from django.test import TestCase
 from django.test.client import Client
 from django.conf import settings
 
 from pine.pine import Protocol
-from pine.views.tests_support import LoadFixtures, process_session
+from pine.views.tests_support import PineTestCase, process_session
 
 URL = '/threads'
 
 
-class UnitThreadTestCase(TestCase, LoadFixtures):
+class UnitThreadTestCase(PineTestCase):
     def setUp(self):
         self.client = Client()
         self.post_friend_thread_json = {
@@ -137,7 +135,7 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.RESULT] == Protocol.FAIL, response[Protocol.MESSAGE]
 
 
-class IntegrationThreadTestCase(TestCase, LoadFixtures):
+class IntegrationThreadTestCase(PineTestCase):
     def setUp(self):
         self.client = Client()
 
@@ -155,11 +153,7 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.RESULT] == Protocol.FAIL
 
 
-class ReportedBugTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-        pass
-
+class ReportedBugTestCase(PineTestCase):
     def test_like_unlike_like_crash(self):
         process_session(self.client, user_id=3)
 

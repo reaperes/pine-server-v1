@@ -4,12 +4,11 @@ from django.test import TestCase
 from django.test.client import Client
 
 from pine.pine import Protocol
-from pine.views.tests_support import LoadFixtures, process_session
+from pine.views.tests_support import PineTestCase, process_session
 
 
-class UnitThreadTestCase(TestCase, LoadFixtures):
+class UnitThreadTestCase(PineTestCase):
     def setUp(self):
-        self.client = Client()
         self.post_thread_comment_json = {
             'content': 'Hello, world.'
         }
@@ -89,7 +88,7 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.RESULT] == Protocol.FAIL
 
 
-class IntegrationThreadTestCase(TestCase, LoadFixtures):
+class IntegrationThreadTestCase(PineTestCase):
     def test_get_thread_comment_after_post_thread_comment(self):
         process_session(self.client, user_id=1)
         response = json.loads(self.client.get('/threads/2/comments').content.decode('utf-8'))
@@ -142,7 +141,7 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.DATA][0]['like_count'] == before_comment_like_count - 1
 
 
-class ReportedTestCase(TestCase, LoadFixtures):
+class ReportedTestCase(PineTestCase):
     def setUp(self):
         self.client = Client()
 

@@ -1,17 +1,11 @@
 import json
 from urllib import parse
 
-from django.test import TestCase
-from django.test.client import Client
-
 from pine.pine import Protocol
-from pine.views.tests_support import LoadFixtures, process_session
+from pine.views.tests_support import PineTestCase, process_session
 
 
-class UnitThreadTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-
+class UnitThreadTestCase(PineTestCase):
     def test_get_latest_friend_timeline(self):
         process_session(self.client, user_id=1)
         uri = parse.urlencode({
