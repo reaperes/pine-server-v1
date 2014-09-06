@@ -98,6 +98,7 @@ class UnitThreadTestCase(PineTestCase):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS, response
 
+
 class IntegrationThreadTestCase(PineTestCase):
     def test_get_thread_comment_after_post_thread_comment(self):
         process_session(self.client, user_id=1)

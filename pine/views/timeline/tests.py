@@ -44,10 +44,3 @@ class UnitTestCase(PineTestCase):
         assert len(response[Protocol.DATA]) == 2
         assert response[Protocol.DATA][0]['type'] == 0  # thread is not author
         assert response[Protocol.DATA][1]['type'] == 1  # thread is author
-
-
-class IntegrationTestCase(PineTestCase):
-    def get_thread_view_data_after_viewing_other_user(self):
-        pass
-        # todo
-        # process_session(self.client, user_id=1)

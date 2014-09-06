@@ -43,6 +43,7 @@ def get_friends_list(request):
         phones = [phone.phone_number for phone in user.friend_phones.all()]
         response_data[Protocol.DATA] = phones
         response_data[Protocol.RESULT] = Protocol.SUCCESS
+
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
 
@@ -64,12 +65,14 @@ response:
     {
         result:     (String, SUCCESS or FAIL),
         message:    (String, error message),
+        data: [     (Array, phone numbers)
+            "01012345678", ...
+        ]
     }
 
     author : hanyong
 """
 
-# todo 가입한 유저 중에 내 친구 리턴
 
 @login_required
 @require_POST
@@ -80,27 +83,20 @@ def post_friends_get(request):
     }
     try:
         req_json = json.loads(request.body.decode('utf-8'))
-
         phone_numbers = req_json['phone_numbers']
 
         friends = []
-
         for target_phone_number in phone_numbers:
-            if Phones.objects.filter(phone_number=target_phone_number).count():
-                target_phone = Phones.objects.get(phone_number=target_phone_number)
-                if Users.objects.filter(phone=target_phone).count():
+            query = Phones.objects.filter(phone_number=target_phone_number)
+            if query.exists():
+                target_phone = query[0]
+                if Users.objects.filter(phone=target_phone).exists():
                     friends.append(target_phone_number)
 
-        try:
-            response_data[Protocol.DATA] = friends
-
-        except IntegrityError as err:
-            pass
-
+        response_data[Protocol.DATA] = friends
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
-        print(str(err))
         response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
@@ -148,7 +144,6 @@ def post_friends_create(request):
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
-        print(str(err))
         response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')

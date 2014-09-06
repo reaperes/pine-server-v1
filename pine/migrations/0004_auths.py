@@ -1,22 +1,22 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+import os
 
 from django.db import models, migrations
-from pine.models import Phones, Auths
+
 
 def forwards_func(apps, schema_editor):
-    Phones = apps.get_model("pine", "Phones")
-    p = Phones.objects.get(phone_number="01085174557")
-    Auths = apps.get_model("pine", "Auths")
+    phones = apps.get_model("pine", "Phones")
+    p = phones.objects.get(phone_number="01085174557")
+    auths = apps.get_model("pine", "Auths")
     db_alias = schema_editor.connection.alias
-    Auths.objects.using(db_alias).bulk_create([
-        Auths(phone=p, auth_number="111111")
+    auths.objects.using(db_alias).bulk_create([
+        auths(phone=p, auth_number="111111")
     ])
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pine', '0002_load_fixtures'),
+        ('pine', '0003_auto_20140904_1602'),
     ]
 
     operations = [
@@ -31,7 +31,9 @@ class Migration(migrations.Migration):
             },
             bases=(models.Model,),
         ),
-        migrations.RunPython(
-            forwards_func,
-        )
     ]
+
+    if os.environ['DJANGO_SETTINGS_MODULE'] != 'PineServerProject.settings.production':
+        operations.append(migrations.RunPython(
+            forwards_func,
+        ))

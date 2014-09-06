@@ -2,8 +2,36 @@ Version management
 ==================
 
 
-v 1.0.4 latest version update.
-------------------------------
+v 1.0.5 latest version update.
+-------------------------------
+**Update**
+  
+  * Add APIs
+    
+    get pine user list (POST: /friends/get)
+    request authentication number (POST: /users/auth/request)
+    
+    
+  * Update API
+  
+    register user (POST: /users/register)
+    
+        request
+        {
+            username:       (String),
+            password:       (String),
+            auth_num:       (String, authentication number),
+            device_type:    (String, android or ios)
+        }
+
+        response
+        {
+            result:     (String, SUCCESS or FAIL),
+            message:    (String, error message),
+            auth_num:   (String, authentication number)
+        }
+
+### v 1.0.4
 **Deprecate**
   * API /threads/<thread_id>/offset?is_friend={boolean}
 

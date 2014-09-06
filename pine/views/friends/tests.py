@@ -77,7 +77,6 @@ class UnitThreadTestCase(PineTestCase):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
-    # todo 가입한 유저 중에 내 친구 리턴 테스트
     def test_get_friends_who_are_user(self):
         process_session(self.client, user_id=1)
         response = self.client.post('/friends/get',
@@ -85,6 +84,7 @@ class UnitThreadTestCase(PineTestCase):
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
+
 
 class IntegrationTestCase(PineTestCase):
     def test_destroy_friend_after_add_no_pine_friend(self):

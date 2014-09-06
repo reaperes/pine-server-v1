@@ -481,5 +481,5 @@ class Migration(migrations.Migration):
         ('pine', '0001_initial'),
     ]
 
-    if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
+    if os.environ['DJANGO_SETTINGS_MODULE'] != 'PineServerProject.settings.production':
         operations = [generate_func(i) for i in range(len(sql))]

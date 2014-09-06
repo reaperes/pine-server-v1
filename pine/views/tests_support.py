@@ -5,8 +5,6 @@ from django.test.client import Client
 
 
 class PineTestCase(TestCase):
-    fixtures = ['auth.json', 'users.json', 'threads.json', 'comments.json', 'phones.json']
-
     def setUp(self):
         self.client = Client()
 

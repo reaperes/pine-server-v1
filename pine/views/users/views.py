@@ -32,7 +32,6 @@ response:
     author : hanyong
 """
 
-# todo 인증 번호 요청하면 전송
 
 @csrf_exempt
 @require_POST
@@ -46,32 +45,27 @@ def post_auth(request):
         req_json = json.loads(request.body.decode('utf-8'))
         username = req_json['username']
 
-        check = re.match(r"01\d{8}", username)
+        check = re.match(r"^01\d{8,9}$", username)
         if check is None:
             raise Exception('It is wrong phone number.')
 
         auth_num = gen_number.gen_number()
+        send_sms.send_msg(username, auth_num)
 
-        if os.environ['DJANGO_SETTINGS_MODULE'] != 'PineServerProject.settings.local':
-            result_msg = send_sms.send_msg(username, auth_num)
+        phone = Phones.objects.filter(phone_number=username)
+
+        if phone.exists() is False:
+            phone = Phones.objects.create(phone_number=username)
         else:
-            result_msg = 'SUCCESS'
+            phone = phone[0]
 
-        if result_msg == 'SUCCESS':
-            phone = Phones.objects.filter(phone_number=username)
+        if Auths.objects.filter(phone=phone).exists():
+            Auths.objects.filter(phone=phone).update(auth_number=auth_num)
+        else:
+            Auths.objects.create(phone=phone, auth_number=auth_num)
 
-            if phone.exists() is False:
-                phone = Phones.objects.create(phone_number=username)
-            else:
-                phone = phone[0]
-
-            if Auths.objects.filter(phone=phone).exists():
-                Auths.objects.filter(phone=phone).update(auth_number=auth_num)
-            else:
-                Auths.objects.create(phone=phone, auth_number=auth_num)
-
-            response_data['auth_num'] = auth_num
-            response_data[Protocol.RESULT] = Protocol.SUCCESS
+        response_data['auth_num'] = auth_num
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
@@ -138,7 +132,6 @@ request:
         password:       (String),
         auth_num:       (String),
         device_type:    (String, android or ios),
-
     }
 
 response:
@@ -151,7 +144,6 @@ response:
     author : hanyong
 """
 
-# todo 인증 번호 검증 추가
 
 @csrf_exempt
 @require_POST
@@ -179,8 +171,8 @@ def post_register(request):
 
         if device_type == 'ios':
             auth_num = req_json['auth_num']
-            auths = Auths.objects.get(phone=phone)
-            if auth_num != auths.auth_number:
+            auth = Auths.objects.get(phone=phone)
+            if auth_num != auth.auth_number:
                 raise Exception('ERROR: Wrong auth number.')
 
         # check username is duplicated

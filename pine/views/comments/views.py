@@ -115,7 +115,7 @@ response:
     author hanyong
 """
 
-# todo 댓글 단 글에 댓글 달렸을 때 알림
+
 def post_comment(request, thread_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
