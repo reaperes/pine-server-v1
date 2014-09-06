@@ -11,6 +11,8 @@ from django.views.decorators.http import require_http_methods, require_GET, requ
 
 from pine.models import Threads, Users
 from pine.pine import Protocol
+from pine.service.thread import threadservice
+from pine.service.thread.threadservice import ThreadPermissionException
 from pine.util import fileutil
 from pine.service.push import send_push_message, PUSH_NEW_THREAD, PUSH_LIKE_THREAD
 
@@ -134,6 +136,7 @@ response:
             id:           (Number, Threads.id),
             type:         (Number, 0-none 1-author),
             like_count:   (Number, how many users like),
+            view_count:   (Number, how many users view),
             liked:        (Boolean, if user like or not),
             pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
             image_url:    (String, image url here),
@@ -155,82 +158,13 @@ def get_thread(request, thread_id):
         thread_id = int(thread_id)
         user_id = int(request.session['user_id'])
 
-        thread = Threads.objects.get(id=thread_id)
-        readers = [user.id for user in thread.readers.only('id')]
+        thread = threadservice.get_thread(user_id, thread_id)
 
-        if user_id in readers:
-            thread_type = 0
-            if user_id == thread.author_id:
-                thread_type = 1
-            likes = [user.id for user in thread.likes.only('id')]
-            response_data[Protocol.DATA] = {
-                'id': thread.id,
-                'type': thread_type,
-                'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
-                'like_count': len(likes),
-                'liked': user_id in likes,
-                'image_url': thread.image_url,
-                'content': thread.content,
-                'comment': len(thread.comments_set.all())
-            }
-            response_data[Protocol.RESULT] = Protocol.SUCCESS
-        else:
-            response_data[Protocol.MESSAGE] = 'Err: You have no permission on thread.'
+        response_data[Protocol.DATA] = thread
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
 
-    except Exception as err:
-        response_data[Protocol.MESSAGE] = str(err)
-
-    return HttpResponse(json.dumps(response_data), content_type='application/json')
-
-
-""" get thread offset url protocol
-
-request:
-    /threads/<thread_id>/offset?is_friend={boolean}
-
-    parameter
-        thread_id:      (Number, Thread id)
-        is_friend:      (Boolean, friend feed or public feed
-
-
-response:
-    Content-Type: application/json;
-    {
-        result:     (String, SUCCESS('pine') or FAIL('not pine')),
-        message:    (String, error message),
-        offset:     (Number, offset number when you request, 0 <= x < 300)
-    }
-
-"""
-
-
-@login_required
-@require_GET
-def get_thread_offset(request, thread_id):
-    response_data = {
-        Protocol.RESULT: Protocol.FAIL,
-        Protocol.MESSAGE: '',
-    }
-
-    try:
-        thread_id = int(thread_id)
-        user_id = request.session['user_id']
-        is_friend = request.GET.get('is_friend')
-
-        if is_friend == 'true' or is_friend == 'True':
-            threads = Threads.objects.filter(readers__id=user_id, is_public=False)[0:299]
-        else:
-            threads = Threads.objects.filter(is_public=True)[0:299]
-
-        idx = 0
-        for thread in threads:
-            if thread_id == thread.id:
-                response_data[Protocol.RESULT] = Protocol.SUCCESS
-                response_data['offset'] = idx
-                return HttpResponse(json.dumps(response_data), content_type='application/json')
-            idx += 1
-
-        response_data[Protocol.MESSAGE] = 'Cannot find thread id in offsets from 0 to 299.'
+    except ThreadPermissionException:
+        response_data[Protocol.MESSAGE] = 'Err: You have no permission on thread.'
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

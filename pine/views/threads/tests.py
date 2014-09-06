@@ -1,5 +1,4 @@
 import json
-from urllib import parse
 
 from django.test.client import Client
 from django.conf import settings
@@ -21,15 +20,6 @@ class UnitThreadTestCase(PineTestCase):
             'is_public': True,
             'content': 'Hello, Test content'
         }
-
-        self.get_friend_thread_offset = {
-            'is_friend': True
-        }
-
-        self.get_public_thread_offset = {
-            'is_friend': False
-        }
-
         self.get_friend_threads_json = {
             'is_friend': True,
             'offset': 0,
@@ -75,22 +65,6 @@ class UnitThreadTestCase(PineTestCase):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA]['type'] == 1     # author
-
-    def test_get_friend_thread_offset(self):
-        process_session(self.client, user_id=2)
-        uri = parse.urlencode(self.get_friend_thread_offset)
-        response = self.client.get(URL+'/1/offset?'+uri, content_type='application/json').content.decode('utf-8')
-        response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response['offset'] == 1
-
-    def test_get_public_thread_offset(self):
-        process_session(self.client, user_id=2)
-        uri = parse.urlencode(self.get_public_thread_offset)
-        response = self.client.get(URL+'/2/offset?'+uri, content_type='application/json').content.decode('utf-8')
-        response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response['offset'] == 3
 
     def test_post_thread_like(self):
         process_session(self.client, user_id=1)

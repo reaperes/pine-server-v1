@@ -2,8 +2,35 @@ Version management
 ==================
 
 
-v 1.0.3 latest version update.
+v 1.0.4 latest version update.
 ------------------------------
+**Deprecate**
+  * API /threads/<thread_id>/offset?is_friend={boolean}
+
+**Update**
+  * add `view_count` key in thread, timeline APIs.
+
+        Examples
+        {
+            id:           (Number, Threads.id),
+            type:         (Number, 0-none 1-author),
+            like_count:   (Number, how many users like),
+            view_count:   (Number, how many users view),
+            liked:        (Boolean, if user like or not),
+            pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
+            image_url:    (String, image url here),
+            content:      (String, content <= 200),
+            comment:      (Number, how many comments commented)
+        },
+
+        Updated Apis
+        Get latest timeline                                      [/timeline/friends?count={count}]
+        Get next threads in timeline starting from offset thread [/timeline/friends/since_offset?offset_id={offset_id}&count={count}]
+        Get friend's timeline previous offset                    [/timeline/friends/previous_offset?offset_id={offset_id}&count={count}]      
+        Get thread                                               [/threads/<thread_id>]
+
+
+### v 1.0.3
 **Update**
   * apply django 1.7
   * apply request 2.4
