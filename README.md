@@ -2,8 +2,14 @@ Version management
 ==================
 
 
-v 1.0.5 latest version update.
--------------------------------
+v 1.0.5.1 latest version update.
+---------------------------------
+**Minor Update**
+  
+  * Minimum friend is now 2 (before 4) 
+
+
+### v 1.0.5 latest version update.
 **Update**
   
   * Add APIs
