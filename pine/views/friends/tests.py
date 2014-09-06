@@ -78,8 +78,9 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
+    # todo 가입한 유저 중에 내 친구 리턴 테스트
     def test_get_friends_who_are_user(self):
-#        process_session(self.client, user_id=1)
+        process_session(self.client, user_id=1)
         response = self.client.post('/friends/get',
                                     data=json.dumps(self.post_friends_destroy_pine_user2),
                                     content_type='application/json').content.decode('utf-8')

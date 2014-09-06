@@ -1,4 +1,4 @@
-import json
+import json, re, os
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -13,8 +13,7 @@ from pine.models import Users, Phones
 from pine.service import send_sms
 from pine.util import gen_number
 
-
-""" post login
+""" post auth
 
 request:
     Content-Type: application/json;
@@ -27,11 +26,13 @@ response:
     Content-Type: application/json;
     {
         result:     (String, SUCCESS or FAIL),
-        message:    (String, error message)
-    }
+        message:    (String, error message),
+        auth_num:   (String, authentication number)
 
+    author : hanyong
 """
 
+# todo 인증 번호 요청하면 전송
 
 @csrf_exempt
 @require_POST
@@ -44,8 +45,17 @@ def post_auth(request):
     try:
         req_json = json.loads(request.body.decode('utf-8'))
         username = req_json['username']
+
+        check = re.match(r"01\d{8}", username)
+        if check is None:
+            raise Exception('It is wrong phone number.')
+
         auth_num = gen_number.gen_number()
-        result_msg = send_sms.send_msg(username, auth_num)
+
+        if os.environ['DJANGO_SETTINGS_MODULE'] != 'PineServerProject.settings.local':
+            result_msg = send_sms.send_msg(username, auth_num)
+        else:
+            result_msg = 'SUCCESS'
 
         if result_msg == 'SUCCESS':
             phone = Phones.objects.filter(phone_number=username)
@@ -60,6 +70,7 @@ def post_auth(request):
             else:
                 Auths.objects.create(phone=phone, auth_number=auth_num)
 
+            response_data['auth_num'] = auth_num
             response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
@@ -137,8 +148,10 @@ response:
         message:    (String, error message)
     }
 
+    author : hanyong
 """
 
+# todo 인증 번호 검증 추가
 
 @csrf_exempt
 @require_POST
@@ -158,7 +171,7 @@ def post_register(request):
         phone = Phones.objects.filter(phone_number=username)
         if phone.exists() is False:
             if device_type == 'ios':
-                raise Exception('ERROR: Should auth first')
+                raise Exception('ERROR: Should auth first.')
             else:
                 phone = Phones.objects.create(phone_number=username)
         else:

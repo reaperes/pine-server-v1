@@ -9,6 +9,7 @@ from pine.models.users import Users
 
 PUSH_NEW_THREAD = 10
 PUSH_NEW_COMMENT = 11
+PUSH_NEW_COMMENT_FRIEND = 12
 
 PUSH_LIKE_THREAD = 20
 PUSH_LIKE_COMMENT = 21
@@ -16,10 +17,10 @@ PUSH_LIKE_COMMENT = 21
 
 def send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None, summary=None, image_url=None):
     if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
-        # below code for test
-        # _send_push_message(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id,
-        #                    summary=summary, image_url=image_url)
-        pass
+        #below code for test
+        _send_push_message(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id,
+                            summary=summary, image_url=image_url)
+        #pass
     else:
         PushThread(user_ids=user_ids, push_type=push_type, thread_id=thread_id, comment_id=comment_id,
                    summary=summary, image_url=image_url).start()
@@ -46,6 +47,7 @@ class PushThread(Thread):
 
     PUSH_NEW_THREAD = 10
     PUSH_NEW_COMMENT = 11
+    PUSH_NEW_COMMENT_FRIEND = 12
 
     PUSH_LIKE_THREAD = 20
     PUSH_LIKE_COMMENT = 21
@@ -84,9 +86,11 @@ def _send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None
     if push_type == PUSH_NEW_THREAD:
         message = '당신의 친구가 새로운 글을 남겼습니다'
     elif push_type == PUSH_NEW_COMMENT:
-        message = '누군가가 당신의 글에 댓글을 달았습니다'
+        message = '누군가 당신의 글에 댓글을 달았습니다'
+    elif push_type == PUSH_NEW_COMMENT_FRIEND:
+        message = '당신이 댓글 단 글에 누군가 댓글을 달았습니다'
     elif push_type == PUSH_LIKE_THREAD:
-        message = '누군가가 당신의 글에 하트를 달았습니다 ♥'
+        message = '누군가 당신의 글에 하트를 달았습니다 ♥'
     elif push_type == PUSH_LIKE_COMMENT:
         message = '누군가 당신의 댓글에 하트를 달았습니다 ♥'
 

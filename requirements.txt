@@ -1,8 +1,4 @@
 Django==1.7.0
 PyMySQL==0.6.2
-<<<<<<< HEAD
-requests==2.4.0
-=======
 requests==2.4.0
 sqlparse==0.1.11
->>>>>>> origin/dev

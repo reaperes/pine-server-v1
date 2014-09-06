@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import os
 
 from django.db import models, migrations
-
 
 sql = [
 "SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT;",
@@ -479,5 +479,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('pine', '0001_initial'),
     ]
-    
-    operations = [generate_func(i) for i in range(len(sql))]
+
+    if os.environ['DJANGO_SETTINGS_MODULE'] == 'PineServerProject.settings.local':
+        operations = [generate_func(i) for i in range(len(sql))]

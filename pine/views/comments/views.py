@@ -7,7 +7,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from pine.models import Threads, Users, Comments
 from pine.pine import Protocol
-from pine.service.push import send_push_message, PUSH_NEW_COMMENT, PUSH_LIKE_COMMENT
+from pine.service.push import send_push_message, PUSH_NEW_COMMENT, PUSH_NEW_COMMENT_FRIEND, PUSH_LIKE_COMMENT
 
 
 @login_required
@@ -112,9 +112,10 @@ response:
         message:    (String, error message),
     }
 
+    author hanyong
 """
 
-
+# todo 댓글 단 글에 댓글 달렸을 때 알림
 def post_comment(request, thread_id):
     response_data = {
         Protocol.RESULT: Protocol.FAIL,
@@ -144,15 +145,21 @@ def post_comment(request, thread_id):
             send_push_message([thread.author.pk], push_type=PUSH_NEW_COMMENT, thread_id=thread_id,
                               summary=summary, image_url=thread.image_url)
 
-        comments = Comments.objects.get(thread=thread_id)
+        comments = Comments.objects.filter(thread=thread)
 
-        writers = {}
+        writers = []
 
         for comment in comments:
-            writers.append(comment.author_id)
+            if thread.author.pk != comment.author.pk:
+                writers.append(comment.author.pk)
 
-        send_push_message(writers, push_type=PUSH_NEW_COMMENT, thread_id=thread_id,
-                          summary=summary, image_url=thread.image_url)
+        if len(writers) > 0:
+            summary = content[:17]
+            if len(content) > 17:
+                summary += '...'
+
+            send_push_message(set(writers), push_type=PUSH_NEW_COMMENT_FRIEND, thread_id=thread_id,
+                              summary=summary, image_url=thread.image_url)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

@@ -27,9 +27,7 @@ response:
         ],
         ...
     }
-
 """
-
 
 @login_required
 @require_GET
@@ -68,8 +66,10 @@ response:
         message:    (String, error message),
     }
 
+    author : hanyong
 """
 
+# todo 가입한 유저 중에 내 친구 리턴
 
 @login_required
 @require_POST
