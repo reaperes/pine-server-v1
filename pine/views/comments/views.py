@@ -38,7 +38,7 @@ response:
                                         1=user's comment,
                                         2=thread author's comment
                                         3=user & thread author's comment),
-                comment_user_id:    (Number, User's virtual id),
+                comment_user_id:    (Number, User's virtual id. It starts 1. Thread author is always 0),
                 like_count:         (Number, how many users like),
                 liked:              (Boolean, if user liked or not),
                 pub_date:           (String, '%Y-%m-%d %H:%M:%S'),
@@ -66,6 +66,8 @@ def get_comments(request, thread_id):
 
         virtual_id_index = 0
         virtual_id = dict()
+        virtual_id[thread.author_id] = virtual_id_index
+        virtual_id_index += 1
         for comment in comments:
             comment_type = 0
             if user_id == comment.author_id:
