@@ -8,9 +8,12 @@ v 1.0.7 latest version update.
   * GET /threads/<thread_id>/comments API virtual id algorithm
   
     from
-      comment_user_id:    (Number, User's virtual id. It starts 0.),
+      
+        comment_user_id:    (Number, User's virtual id. It starts 0.),
+    
     to
-      comment_user_id:    (Number, User's virtual id. It starts 1. Thread author is always 0),
+    
+        comment_user_id:    (Number, User's virtual id. It starts 1. Thread author is always 0),
 
 
 ### v 1.0.6.1
