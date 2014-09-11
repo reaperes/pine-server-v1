@@ -1,15 +1,20 @@
 Version management
 ==================
 
-v 1.0.6 latest version update.
+
+v 1.0.6.1 latest version update.
 ---------------------------------
+**Bug Fixed**
+
+  * comment push
+
+
+### v 1.0.6 
 **Bug Fixed**
 
   * timeline/friends/since_offset API 
   * timeline/friends/previous_offset API 
   * comment push
-
-
 
 ### v 1.0.5.1
 **Minor Update**

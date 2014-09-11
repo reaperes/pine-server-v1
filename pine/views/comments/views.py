@@ -148,10 +148,9 @@ def post_comment(request, thread_id):
         comments = Comments.objects.filter(thread=thread)
 
         writers = []
-
         for comment in comments:
-            if user_id != thread.author_id and thread.author.pk != comment.author.pk:
-                writers.append(comment.author.pk)
+            if comment.author_id != user_id and comment.author_id != thread.author_id:
+                writers.append(comment.author_id)
 
         if len(writers) > 0:
             summary = content[:17]
