@@ -150,7 +150,7 @@ def post_comment(request, thread_id):
         writers = []
 
         for comment in comments:
-            if thread.author.pk != comment.author.pk:
+            if user_id != thread.author_id and thread.author.pk != comment.author.pk:
                 writers.append(comment.author.pk)
 
         if len(writers) > 0:

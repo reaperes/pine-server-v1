@@ -124,6 +124,8 @@ def _send_push_message_ios(push_id, push_type=None, thread_id=None, image_url=No
         message = '당신의 친구가 새로운 글을 남겼습니다'
     elif push_type == PUSH_NEW_COMMENT:
         message = '누군가가 당신의 글에 댓글을 달았습니다'
+    elif push_type == PUSH_NEW_COMMENT_FRIEND:
+        message = '당신이 댓글 단 글에 누군가 댓글을 달았습니다'
     elif push_type == PUSH_LIKE_THREAD:
         message = '누군가가 당신의 글에 하트를 달았습니다 ♥'
     elif push_type == PUSH_LIKE_COMMENT:

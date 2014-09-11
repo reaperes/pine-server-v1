@@ -40,7 +40,8 @@ class UnitTestCase(PineTestCase):
         })
         response = self.client.get('/timeline/friends/previous_offset?'+uri, content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
+        print(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert len(response[Protocol.DATA]) == 2
-        assert response[Protocol.DATA][0]['type'] == 0  # thread is not author
-        assert response[Protocol.DATA][1]['type'] == 1  # thread is author
+        assert response[Protocol.DATA][0]['id'] == 3
+        assert response[Protocol.DATA][1]['id'] == 1

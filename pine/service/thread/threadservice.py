@@ -15,11 +15,10 @@ def get_latest_threads(user_id, count=1, offset_id=None, reverse=False):
 
         if reverse is True:
             threads = (Threads.objects
-                       .filter(readers__id=user_id, is_public=False, pub_date__gt=offset_datetime)
-                       .reverse()[:count])
+                       .filter(readers__id=user_id, is_public=False, pub_date__lt=offset_datetime)[:count])
         else:
             threads = (Threads.objects
-                       .filter(readers__id=user_id, is_public=False, pub_date__lt=offset_datetime)[:count])
+                       .filter(readers__id=user_id, is_public=False, pub_date__gt=offset_datetime)[:count])
 
     else:
         threads = Threads.objects.filter(readers__id=user_id, is_public=False)[0:count]
