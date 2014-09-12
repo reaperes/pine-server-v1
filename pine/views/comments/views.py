@@ -132,10 +132,10 @@ def post_comment(request, thread_id):
         user = Users.objects.get(id=user_id)
         content = req_json['content']
 
-        Comments.objects.create(author=user,
-                                thread=thread,
-                                pub_date=timezone.now(),
-                                content=content)
+        comment = Comments.objects.create(author=user,
+                                          thread=thread,
+                                          pub_date=timezone.now(),
+                                          content=content)
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
@@ -145,7 +145,7 @@ def post_comment(request, thread_id):
                 summary += '...'
 
             send_push_message([thread.author.pk], push_type=PUSH_NEW_COMMENT, thread_id=thread_id,
-                              summary=summary, image_url=thread.image_url)
+                              comment_id=comment.id, summary=summary, image_url=thread.image_url)
 
         comments = Comments.objects.filter(thread=thread)
 
@@ -160,7 +160,7 @@ def post_comment(request, thread_id):
                 summary += '...'
 
             send_push_message(set(writers), push_type=PUSH_NEW_COMMENT_FRIEND, thread_id=thread_id,
-                              summary=summary, image_url=thread.image_url)
+                              comment_id=comment.id, summary=summary, image_url=thread.image_url)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

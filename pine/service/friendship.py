@@ -5,9 +5,10 @@ from pine.models import Users, Phones
 def create_friendship(user, target_phone_number):
     # get or create target phone record
     target_phone_id = Phones.objects.filter(phone_number=target_phone_number)
-    target_phone = None
     if target_phone_id.exists():
         target_phone = Phones.objects.get(phone_number=target_phone_number)
+        if user.phone.id == target_phone_id:
+            return
     else:
         target_phone = Phones.objects.create(phone_number=target_phone_number)
 

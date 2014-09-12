@@ -1,8 +1,36 @@
 Version management
 ==================
 
-v 1.0.7 latest version update.
+v 1.0.8 latest version update.
 ---------------------------------
+**Update**
+
+  * Modify notification message
+  
+    Android
+    
+        when there is new thread(10): '누군가 새 글을 남겼습니다'
+        when there is new comment in your thread(11): '당신의 글에 댓글이 달렸습니다'
+        when there is new comment in subscribed thread(12): '댓글 단 글에 새로운 댓글이 달렸습니다'
+        when there is new star in your thread(20): '누군가 당신의 글에 별을 달았습니다'
+        when there is new star in your comment(21): '누군가 당신의 댓글에 별을 달았습니다'
+
+    iOS
+    
+        (10): '누군가 새 글을 남겼습니다'
+        (11): '당신의 글에 댓글이 달렸습니다'
+        (12): '댓글 단 글에 새로운 댓글이 달렸습니다'
+        (20): '누군가 당신의 글에 별을 달았습니다 ★'
+        (21): '누군가 당신의 댓글에 별을 달았습니다 ★'
+        
+  * Add comment_id in new comment push message only android.
+        
+**Bug fixed**
+  
+  * Create friendship bug fixed : User can not be friend with herself.
+
+
+### v 1.0.7
 **Update**
 
   * GET /threads/<thread_id>/comments API virtual id algorithm

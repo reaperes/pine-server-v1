@@ -84,15 +84,15 @@ def _send_push_message(user_ids, push_type=None, thread_id=None, comment_id=None
 
     message = ''
     if push_type == PUSH_NEW_THREAD:
-        message = '당신의 친구가 새로운 글을 남겼습니다'
+        message = '누군가 새 글을 남겼습니다'
     elif push_type == PUSH_NEW_COMMENT:
-        message = '누군가 당신의 글에 댓글을 달았습니다'
+        message = '당신의 글에 댓글이 달렸습니다'
     elif push_type == PUSH_NEW_COMMENT_FRIEND:
-        message = '당신이 댓글 단 글에 누군가 댓글을 달았습니다'
+        message = '댓글 단 글에 새로운 댓글이 달렸습니다'
     elif push_type == PUSH_LIKE_THREAD:
-        message = '누군가 당신의 글에 하트를 달았습니다 ♥'
+        message = '누군가 당신의 글에 별을 달았습니다'
     elif push_type == PUSH_LIKE_COMMENT:
-        message = '누군가 당신의 댓글에 하트를 달았습니다 ♥'
+        message = '누군가 당신의 댓글에 별을 달았습니다'
 
     send_data = {
         'push_type': push_type,
@@ -121,15 +121,15 @@ def _send_push_message_ios(push_id, push_type=None, thread_id=None, image_url=No
 
     message = ''
     if push_type == PUSH_NEW_THREAD:
-        message = '당신의 친구가 새로운 글을 남겼습니다'
+        message = '누군가 새 글을 남겼습니다'
     elif push_type == PUSH_NEW_COMMENT:
-        message = '누군가가 당신의 글에 댓글을 달았습니다'
+        message = '당신의 글에 댓글이 달렸습니다'
     elif push_type == PUSH_NEW_COMMENT_FRIEND:
-        message = '당신이 댓글 단 글에 누군가 댓글을 달았습니다'
+        message = '댓글 단 글에 새로운 댓글이 달렸습니다'
     elif push_type == PUSH_LIKE_THREAD:
-        message = '누군가가 당신의 글에 하트를 달았습니다 ♥'
+        message = '누군가 당신의 글에 별을 달았습니다 ★'
     elif push_type == PUSH_LIKE_COMMENT:
-        message = '누군가 당신의 댓글에 하트를 달았습니다 ♥'
+        message = '누군가 당신의 댓글에 별을 달았습니다 ★'
 
     req = {
         'token': push_id,

@@ -138,7 +138,7 @@ def post_friends_create(request):
         for target_phone_number in phone_numbers:
             try:
                 friendship.create_friendship(user, target_phone_number)
-            except IntegrityError as err:
+            except IntegrityError:
                 pass
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
