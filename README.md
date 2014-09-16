@@ -1,8 +1,14 @@
 Version management
 ==================
 
-v 1.0.8 latest version update.
+v 1.0.9 latest version update.
 ---------------------------------
+**Bug fixed**
+
+  * unlike thread bug fixed
+
+
+### v 1.0.8 latest version update.
 **Update**
 
   * Modify notification message

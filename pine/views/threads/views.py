@@ -251,7 +251,7 @@ def post_thread_unlike(request, thread_id):
     }
 
     try:
-        user_id = request.session['user_id']
+        user_id = int(request.session['user_id'])
         user = Users.objects.get(id=user_id)
 
         # update db

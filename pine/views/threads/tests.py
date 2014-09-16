@@ -110,9 +110,6 @@ class UnitThreadTestCase(PineTestCase):
 
 
 class IntegrationThreadTestCase(PineTestCase):
-    def setUp(self):
-        self.client = Client()
-
     def test_get_thread_after_report_thread(self):
         # report thread
         process_session(self.client, user_id=2)
@@ -137,11 +134,23 @@ class ReportedBugTestCase(PineTestCase):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
+        # get like count
+        response = self.client.get('/threads/8', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        before_like_count = response[Protocol.DATA]['like_count']
+
         # unlike thread
         response = self.client.post('/threads/8/unlike',
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # get like count
+        response = self.client.get('/threads/8', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA]['like_count'] == before_like_count - 1
 
         # like thread
         response = self.client.post('/threads/8/like',
