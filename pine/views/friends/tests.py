@@ -229,3 +229,18 @@ class ReportedBugTestCase(PineTestCase):
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+    def test_create_friendship_herself(self):
+        process_session(self.client, user_id=1)
+        response = self.client.post('/friends/create',
+                                    data=json.dumps({
+                                        'phone_numbers': ['01032080403']
+                                    }),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        response = self.client.get('/friends/list', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert not '01032080403' in response[Protocol.DATA]
