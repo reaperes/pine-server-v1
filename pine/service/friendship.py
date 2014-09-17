@@ -7,7 +7,7 @@ def create_friendship(user, target_phone_number):
     target_phone_id = Phones.objects.filter(phone_number=target_phone_number)
     if target_phone_id.exists():
         target_phone = Phones.objects.get(phone_number=target_phone_number)
-        if user.phone.id == target_phone_id:
+        if user.phone.id == target_phone.id:
             return
     else:
         target_phone = Phones.objects.create(phone_number=target_phone_number)
