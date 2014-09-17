@@ -2,11 +2,10 @@ import json
 from django.contrib.auth.decorators import login_required
 
 from django.http import HttpResponse
-from django.utils import timezone
 from django.views.decorators.http import require_GET
 
-from pine.models import Threads
 from pine.pine import Protocol
+from pine.service.thread import threadservice
 
 
 """ get friend timeline
@@ -25,7 +24,9 @@ response:
         [
             {
                 id:           (Number, Threads.id),
+                type:         (Number, 0-none 1-author),
                 like_count:   (Number, how many users like),
+                view_count:   (Number, how many users view),
                 liked:        (Boolean, if user like or not),
                 pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
                 image_url:    (String, image url here),
@@ -54,21 +55,9 @@ def get_latest_friend_timeline(request):
         user_id = int(request.session['user_id'])
         count = int(request.GET.get('count'))
 
-        threads = Threads.objects.filter(readers__id=user_id, is_public=False)[0:count]
+        threads = threadservice.get_latest_threads(user_id, count=count)
 
-        for thread in threads:
-            likes = [user.id for user in thread.likes.only('id')]
-
-            response_data[Protocol.DATA].append({
-                'id': thread.id,
-                'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
-                'like_count': len(likes),
-                'liked': user_id in likes,
-                'image_url': thread.image_url,
-                'content': thread.content,
-                'comment': len(thread.comments_set.all())
-            })
-
+        response_data[Protocol.DATA] = threads
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
@@ -93,7 +82,9 @@ response:
         [
             {
                 id:           (Number, Threads.id),
+                type:         (Number, 0-none 1-author),
                 like_count:   (Number, how many users like),
+                view_count:   (Number, how many users view),
                 liked:        (Boolean, if user like or not),
                 pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
                 image_url:    (String, image url here),
@@ -119,29 +110,13 @@ def get_friend_timeline_since_offset(request):
     }
 
     try:
-        user_id = request.session['user_id']
+        user_id = int(request.session['user_id'])
         count = int(request.GET.get('count'))
         offset_id = int(request.GET.get('offset_id'))
 
-        offset_datetime = Threads.objects.filter(id=offset_id).values('pub_date')[0]['pub_date']
+        threads = threadservice.get_latest_threads(user_id, count=count, offset_id=offset_id)
 
-        threads = (Threads.objects
-                   .filter(readers__id=user_id, is_public=False, pub_date__gt=offset_datetime)
-                   .reverse()[:count])
-
-        for thread in threads:
-            likes = [user.id for user in thread.likes.only('id')]
-
-            response_data[Protocol.DATA].append({
-                'id': thread.id,
-                'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
-                'like_count': len(likes),
-                'liked': user_id in likes,
-                'image_url': thread.image_url,
-                'content': thread.content,
-                'comment': len(thread.comments_set.all())
-            })
-
+        response_data[Protocol.DATA] = threads
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
@@ -166,7 +141,9 @@ response:
         [
             {
                 id:           (Number, Threads.id),
+                type:         (Number, 0-none 1-author),
                 like_count:   (Number, how many users like),
+                view_count:   (Number, how many users view),
                 liked:        (Boolean, if user like or not),
                 pub_date:     (String, '%Y-%m-%d %H:%M:%S'),
                 image_url:    (String, image url here),
@@ -192,28 +169,13 @@ def get_friend_timeline_previous_offset(request):
     }
 
     try:
-        user_id = request.session['user_id']
+        user_id = int(request.session['user_id'])
         count = int(request.GET.get('count'))
         offset_id = int(request.GET.get('offset_id'))
 
-        offset_datetime = Threads.objects.filter(id=offset_id).values('pub_date')[0]['pub_date']
+        threads = threadservice.get_latest_threads(user_id, count=count, offset_id=offset_id, reverse=True)
 
-        threads = (Threads.objects
-                   .filter(readers__id=user_id, is_public=False, pub_date__lt=offset_datetime)[:count])
-
-        for thread in threads:
-            likes = [user.id for user in thread.likes.only('id')]
-
-            response_data[Protocol.DATA].append({
-                'id': thread.id,
-                'pub_date': timezone.localtime(thread.pub_date).strftime(r'%Y-%m-%d %H:%M:%S'),
-                'like_count': len(likes),
-                'liked': user_id in likes,
-                'image_url': thread.image_url,
-                'content': thread.content,
-                'comment': len(thread.comments_set.all())
-            })
-
+        response_data[Protocol.DATA] = threads
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:

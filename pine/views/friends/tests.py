@@ -4,12 +4,11 @@ from django.test import TestCase
 from django.test.client import Client
 
 from pine.pine import Protocol
-from pine.views.tests_support import LoadFixtures, process_session
+from pine.views.tests_support import PineTestCase, process_session
 
 
-class UnitThreadTestCase(TestCase, LoadFixtures):
+class UnitThreadTestCase(PineTestCase):
     def setUp(self):
-        self.client = Client()
         self.post_friends_create_no_pine_user = {
             'phone_numbers': ['01088888878', '01088888788']
         }
@@ -23,7 +22,7 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
             'phone_numbers': ['01098590530']
         }
         self.post_friends_destroy_pine_user2 = {
-            'phone_numbers': ['01040099179']
+            'phone_numbers': ['01040099179', '01087537711', '01098590530']
         }
 
     def test_get_friends_list(self):
@@ -78,11 +77,16 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
+    def test_get_friends_who_are_user(self):
+        process_session(self.client, user_id=1)
+        response = self.client.post('/friends/get',
+                                    data=json.dumps(self.post_friends_destroy_pine_user2),
+                                    content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
 
-class IntegrationTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
 
+class IntegrationTestCase(PineTestCase):
     def test_destroy_friend_after_add_no_pine_friend(self):
         # create friendship with no pine user
         process_session(self.client, user_id=3)
@@ -116,10 +120,7 @@ class IntegrationTestCase(TestCase, LoadFixtures):
         assert before_friends_count == len(response[Protocol.DATA]) + 4
 
 
-class ReportedBugTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-
+class ReportedBugTestCase(PineTestCase):
     def user_3_add_x2_friendship_is_crashed(self):
         process_session(self.client, user_id=3)
         response = self.client.post('/friends/create',

@@ -11,6 +11,7 @@ urlpatterns = patterns('',
     # url(r'^admin/', include(admin.site.urls)),
 
     url(r'^users/login', 'pine.views.users.views.post_login'),
+    url(r'^users/auth/request$', 'pine.views.users.views.post_auth'),
     url(r'^users/register$', 'pine.views.users.views.post_register'),
     url(r'^users/register/push', 'pine.views.users.views.post_register_push'),
 
@@ -20,7 +21,6 @@ urlpatterns = patterns('',
 
     url(r'^threads$', 'pine.views.threads.views.post_thread'),
     url(r'^threads/(?P<thread_id>[0-9]+)$', 'pine.views.threads.views.get_thread'),
-    url(r'^threads/(?P<thread_id>[0-9]+)/offset$', 'pine.views.threads.views.get_thread_offset'),
     url(r'^threads/(?P<thread_id>[0-9]+)/like', 'pine.views.threads.views.post_thread_like'),
     url(r'^threads/(?P<thread_id>[0-9]+)/unlike', 'pine.views.threads.views.post_thread_unlike'),
     url(r'^threads/(?P<thread_id>[0-9]+)/report', 'pine.views.threads.views.post_report_thread'),
@@ -33,6 +33,7 @@ urlpatterns = patterns('',
     url(r'^comments/(?P<comment_id>[0-9]+)/block', 'pine.views.comments.views.post_comment_block'),
 
     url(r'^friends/list', 'pine.views.friends.views.get_friends_list'),
+    url(r'^friends/get', 'pine.views.friends.views.post_friends_get'),
     url(r'^friends/create', 'pine.views.friends.views.post_friends_create'),
     url(r'^friends/destroy', 'pine.views.friends.views.post_friends_destroy'),
     url(r'^friends/handshake_count', 'pine.views.friends.views.get_friends_handshake_count')

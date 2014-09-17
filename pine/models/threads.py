@@ -5,9 +5,10 @@ from pine.models.users import Users
 
 class Threads(models.Model):
     author = models.ForeignKey(Users, related_name='authorized')
-    is_public = models.BooleanField()
+    is_public = models.BooleanField(default=False)
     readers = models.ManyToManyField(Users, related_name='readable')
     likes = models.ManyToManyField(Users, related_name='likeThreads')
+    views = models.ManyToManyField(Users, related_name='viewThreads')
     max_like = models.IntegerField(default=0)
     reports = models.ManyToManyField(Users, related_name='reportThreads')
     pub_date = models.DateTimeField()
@@ -24,6 +25,7 @@ class Threads(models.Model):
                 + ', is_public:' + str(self.is_public)
                 + ', readers: [' + ' '.join(str(n) for n in [user.id for user in self.readers.only('id')])
                 + '], likes: [' + ' '.join(str(n) for n in [user.id for user in self.likes.only('id')])
+                + '], views: [' + ' '.join(str(n) for n in [user.id for user in self.views.only('id')])
                 + '], max_like: ' + str(self.max_like)
                 + ', reports: [' + ' '.join(str(n) for n in [user.id for user in self.reports.only('id')])
                 + '], pub_date: ' + str(self.pub_date)

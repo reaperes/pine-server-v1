@@ -1,18 +1,15 @@
-import re
 import json
-from urllib import parse
 
-from django.test import TestCase
 from django.test.client import Client
 from django.conf import settings
 
 from pine.pine import Protocol
-from pine.views.tests_support import LoadFixtures, process_session
+from pine.views.tests_support import PineTestCase, process_session
 
 URL = '/threads'
 
 
-class UnitThreadTestCase(TestCase, LoadFixtures):
+class UnitThreadTestCase(PineTestCase):
     def setUp(self):
         self.client = Client()
         self.post_friend_thread_json = {
@@ -23,15 +20,6 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
             'is_public': True,
             'content': 'Hello, Test content'
         }
-
-        self.get_friend_thread_offset = {
-            'is_friend': True
-        }
-
-        self.get_public_thread_offset = {
-            'is_friend': False
-        }
-
         self.get_friend_threads_json = {
             'is_friend': True,
             'offset': 0,
@@ -70,22 +58,13 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
         assert response[Protocol.DATA]['id'] == 1
+        assert response[Protocol.DATA]['type'] == 0     # not author
 
-    def test_get_friend_thread_offset(self):
-        process_session(self.client, user_id=2)
-        uri = parse.urlencode(self.get_friend_thread_offset)
-        response = self.client.get(URL+'/1/offset?'+uri, content_type='application/json').content.decode('utf-8')
+        process_session(self.client, user_id=1)
+        response = self.client.get(URL+'/1', content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response['offset'] == 1
-
-    def test_get_public_thread_offset(self):
-        process_session(self.client, user_id=2)
-        uri = parse.urlencode(self.get_public_thread_offset)
-        response = self.client.get(URL+'/2/offset?'+uri, content_type='application/json').content.decode('utf-8')
-        response = json.loads(response)
-        assert response[Protocol.RESULT] == Protocol.SUCCESS
-        assert response['offset'] == 3
+        assert response[Protocol.DATA]['type'] == 1     # author
 
     def test_post_thread_like(self):
         process_session(self.client, user_id=1)
@@ -130,10 +109,7 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.RESULT] == Protocol.FAIL, response[Protocol.MESSAGE]
 
 
-class IntegrationThreadTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-
+class IntegrationThreadTestCase(PineTestCase):
     def test_get_thread_after_report_thread(self):
         # report thread
         process_session(self.client, user_id=2)
@@ -148,11 +124,7 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.RESULT] == Protocol.FAIL
 
 
-class ReportedBugTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-        pass
-
+class ReportedBugTestCase(PineTestCase):
     def test_like_unlike_like_crash(self):
         process_session(self.client, user_id=3)
 
@@ -162,11 +134,23 @@ class ReportedBugTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
 
+        # get like count
+        response = self.client.get('/threads/8', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        before_like_count = response[Protocol.DATA]['like_count']
+
         # unlike thread
         response = self.client.post('/threads/8/unlike',
                                     content_type='application/json').content.decode('utf-8')
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.SUCCESS
+
+        # get like count
+        response = self.client.get('/threads/8', content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert response[Protocol.DATA]['like_count'] == before_like_count - 1
 
         # like thread
         response = self.client.post('/threads/8/like',

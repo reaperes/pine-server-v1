@@ -4,12 +4,11 @@ from django.test import TestCase
 from django.test.client import Client
 
 from pine.pine import Protocol
-from pine.views.tests_support import LoadFixtures, process_session
+from pine.views.tests_support import PineTestCase, process_session
 
 
-class UnitThreadTestCase(TestCase, LoadFixtures):
+class UnitThreadTestCase(PineTestCase):
     def setUp(self):
-        self.client = Client()
         self.post_thread_comment_json = {
             'content': 'Hello, world.'
         }
@@ -34,6 +33,30 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.DATA][0]['comment_type'] == 2
         assert response[Protocol.DATA][2]['comment_type'] == 1
         assert response[Protocol.DATA][2]['comment_user_id'] == 2
+
+    def test_get_thread_comment_thread_author_is_not_commented_first(self):
+        # thread 3 authored user6 commented user1, user6
+        process_session(self.client, user_id=1)
+        response = self.client.get('/threads/3/comments').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS
+        assert len(response[Protocol.DATA]) == 2
+        assert response[Protocol.DATA][0]['comment_user_id'] == 1
+        assert response[Protocol.DATA][1]['comment_user_id'] == 0
+        assert response[Protocol.DATA][0]['like_count'] == 0
+        assert response[Protocol.DATA][1]['like_count'] == 0
+        assert response[Protocol.DATA][0]['liked'] is False
+        assert response[Protocol.DATA][1]['liked'] is False
+        assert response[Protocol.DATA][0]['comment_type'] == 1
+        assert response[Protocol.DATA][1]['comment_type'] == 2
+
+        process_session(self.client, user_id=6)
+        response = self.client.get('/threads/3/comments').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.DATA][0]['comment_user_id'] == 1
+        assert response[Protocol.DATA][1]['comment_user_id'] == 0
+        assert response[Protocol.DATA][0]['comment_type'] == 0
+        assert response[Protocol.DATA][1]['comment_type'] == 3
 
     def test_post_thread_comment(self):
         process_session(self.client, user_id=1)
@@ -88,8 +111,19 @@ class UnitThreadTestCase(TestCase, LoadFixtures):
         response = json.loads(response)
         assert response[Protocol.RESULT] == Protocol.FAIL
 
+    def test_post_comment(self):
+        c = Client()
+        process_session(c, user_id=1)
+        response = c.post('/threads/3/comments',
+                data=json.dumps({
+                   'content':'for ttt'
+                }),
+                content_type='application/json').content.decode('utf-8')
+        response = json.loads(response)
+        assert response[Protocol.RESULT] == Protocol.SUCCESS, response
 
-class IntegrationThreadTestCase(TestCase, LoadFixtures):
+
+class IntegrationThreadTestCase(PineTestCase):
     def test_get_thread_comment_after_post_thread_comment(self):
         process_session(self.client, user_id=1)
         response = json.loads(self.client.get('/threads/2/comments').content.decode('utf-8'))
@@ -142,10 +176,7 @@ class IntegrationThreadTestCase(TestCase, LoadFixtures):
         assert response[Protocol.DATA][0]['like_count'] == before_comment_like_count - 1
 
 
-class ReportedTestCase(TestCase, LoadFixtures):
-    def setUp(self):
-        self.client = Client()
-
+class ReportedTestCase(PineTestCase):
     def test_get_thread_comment_user_id_after_post_thread_comment(self):
         # thread 1 : comment user 1 8 4 1 8
         # Step 1. Setting comments

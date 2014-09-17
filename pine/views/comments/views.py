@@ -8,7 +8,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from pine.models import Threads, Users, Comments
 from pine.pine import Protocol
-from pine.service.push import send_push_message, PUSH_NEW_COMMENT, PUSH_LIKE_COMMENT
+from pine.service.push import send_push_message, PUSH_NEW_COMMENT, PUSH_NEW_COMMENT_FRIEND, PUSH_LIKE_COMMENT
 
 
 @login_required
@@ -37,9 +37,9 @@ response:
                 comment_type:       (Number,
                                         0=normal,
                                         1=user's comment,
-                                        2=thread author's comment,
+                                        2=thread author's comment
                                         3=user & thread author's comment),
-                comment_user_id:    (Number, User's virtual id),
+                comment_user_id:    (Number, User's virtual id. It starts 1. Thread author is always 0),
                 like_count:         (Number, how many users like),
                 liked:              (Boolean, if user liked or not),
                 pub_date:           (String, '%Y-%m-%d %H:%M:%S'),
@@ -67,6 +67,8 @@ def get_comments(request, thread_id):
 
         virtual_id_index = 0
         virtual_id = dict()
+        virtual_id[thread.author_id] = virtual_id_index
+        virtual_id_index += 1
         for comment in comments:
             comment_type = 0
             if user_id == comment.author_id:
@@ -113,6 +115,7 @@ response:
         message:    (String, error message),
     }
 
+    author hanyong
 """
 
 
@@ -130,10 +133,10 @@ def post_comment(request, thread_id):
         user = Users.objects.get(id=user_id)
         content = req_json['content']
 
-        Comments.objects.create(author=user,
-                                thread=thread,
-                                pub_date=timezone.now(),
-                                content=content)
+        comment = Comments.objects.create(author=user,
+                                          thread=thread,
+                                          pub_date=timezone.now(),
+                                          content=content)
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
@@ -143,7 +146,22 @@ def post_comment(request, thread_id):
                 summary += '...'
 
             send_push_message([thread.author.pk], push_type=PUSH_NEW_COMMENT, thread_id=thread_id,
-                              summary=summary, image_url=thread.image_url)
+                              comment_id=comment.id, summary=summary, image_url=thread.image_url)
+
+        comments = Comments.objects.filter(thread=thread)
+
+        writers = []
+        for comment in comments:
+            if comment.author_id != user_id and comment.author_id != thread.author_id:
+                writers.append(comment.author_id)
+
+        if len(writers) > 0:
+            summary = content[:17]
+            if len(content) > 17:
+                summary += '...'
+
+            send_push_message(set(writers), push_type=PUSH_NEW_COMMENT_FRIEND, thread_id=thread_id,
+                              comment_id=comment.id, summary=summary, image_url=thread.image_url)
 
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)

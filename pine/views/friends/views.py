@@ -27,9 +27,7 @@ response:
         ],
         ...
     }
-
 """
-
 
 @login_required
 @require_GET
@@ -45,6 +43,59 @@ def get_friends_list(request):
         phones = [phone.phone_number for phone in user.friend_phones.all()]
         response_data[Protocol.DATA] = phones
         response_data[Protocol.RESULT] = Protocol.SUCCESS
+
+    except Exception as err:
+        response_data[Protocol.MESSAGE] = str(err)
+
+    return HttpResponse(json.dumps(response_data), content_type='application/json')
+
+
+""" POST get friends
+
+request:
+    Content-Type: application/json;
+    {
+        phone_numbers:  (Array, Friend's phone numbers)
+        ["01012345678", ... ]
+    }
+
+
+response:
+    Content-Type: application/json;
+    {
+        result:     (String, SUCCESS or FAIL),
+        message:    (String, error message),
+        data: [     (Array, phone numbers)
+            "01012345678", ...
+        ]
+    }
+
+    author : hanyong
+"""
+
+
+@login_required
+@require_POST
+def post_friends_get(request):
+    response_data = {
+        Protocol.RESULT: Protocol.FAIL,
+        Protocol.MESSAGE: ''
+    }
+    try:
+        req_json = json.loads(request.body.decode('utf-8'))
+        phone_numbers = req_json['phone_numbers']
+
+        friends = []
+        for target_phone_number in phone_numbers:
+            query = Phones.objects.filter(phone_number=target_phone_number)
+            if query.exists():
+                target_phone = query[0]
+                if Users.objects.filter(phone=target_phone).exists():
+                    friends.append(target_phone_number)
+
+        response_data[Protocol.DATA] = friends
+        response_data[Protocol.RESULT] = Protocol.SUCCESS
+
     except Exception as err:
         response_data[Protocol.MESSAGE] = str(err)
 
@@ -87,13 +138,12 @@ def post_friends_create(request):
         for target_phone_number in phone_numbers:
             try:
                 friendship.create_friendship(user, target_phone_number)
-            except IntegrityError as err:
+            except IntegrityError:
                 pass
 
         response_data[Protocol.RESULT] = Protocol.SUCCESS
 
     except Exception as err:
-        print(str(err))
         response_data[Protocol.MESSAGE] = str(err)
 
     return HttpResponse(json.dumps(response_data), content_type='application/json')
