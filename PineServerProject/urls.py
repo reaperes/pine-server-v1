@@ -10,6 +10,8 @@ urlpatterns = patterns('',
 
     # url(r'^admin/', include(admin.site.urls)),
 
+    url(r'^$', 'pine.views.views.index'),
+
     url(r'^users/login', 'pine.views.users.views.post_login'),
     url(r'^users/auth/request$', 'pine.views.users.views.post_auth'),
     url(r'^users/register$', 'pine.views.users.views.post_register'),
