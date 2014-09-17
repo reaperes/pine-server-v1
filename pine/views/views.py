@@ -4,4 +4,4 @@ from django.views.decorators.http import require_GET
 
 @require_GET
 def index(request):
-    return render(request, 'privacy.html', dirs=('templates',))
+    return render(request, '../templates/privacy.html', dirs=('templates',))
