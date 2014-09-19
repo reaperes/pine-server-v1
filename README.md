@@ -1,8 +1,15 @@
 Version management
 ==================
 
-v 1.0.9 latest version update.
+
+v 1.0.9.1 latest version update
 ---------------------------------
+**Bug fixed**
+
+  * Reporting comment bug fix. 
+
+
+### v 1.0.9 latest version update.
 **Bug fixed**
 
   * unlike thread bug fixed

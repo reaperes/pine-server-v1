@@ -291,7 +291,7 @@ def post_comment_report(request, comment_id):
         user = Users.objects.get(id=user_id)
 
         report_comment_id = int(comment_id)
-        report_comment = Threads.objects.get(id=report_comment_id)
+        report_comment = Comments.objects.get(id=report_comment_id)
 
         if user_id != report_comment.author_id:
             report_comment.reports.add(user)
